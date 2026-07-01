@@ -251,38 +251,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 /* ── STATUS BAR ── */
 #statusbar{height:22px;background:#3a5c40;display:flex;align-items:center;padding:0 13px;gap:10px;flex-shrink:0;}
 
-/* ── SUPERVISÃO ── */
-.sup-banner{background:rgba(74,127,181,.1);border:1px solid rgba(74,127,181,.25);border-radius:7px;padding:9px 12px;font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6;}
-.sup-case-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;text-align:left;width:100%;}
-.sup-case-item:hover{border-color:var(--border2);}
-.sup-case-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.sup-case-meta{font-size:11px;color:var(--text3);}
-.sup-case-preview{font-size:11.5px;color:var(--text2);margin-top:5px;}
-.sup-field{margin-bottom:12px;}
-.sup-field label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;}
-.sup-field input,.sup-field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;transition:border-color .15s;resize:vertical;}
-.sup-field input:focus,.sup-field textarea:focus{border-color:#4e7255;}
-.sup-field input::placeholder,.sup-field textarea::placeholder{color:var(--text4);}
-.sup-field-row{display:flex;gap:10px;}
-.sup-field-row .sup-field{flex:1;}
-.sup-findings{background:rgba(196,95,60,.08);border:1px solid rgba(196,95,60,.25);border-radius:6px;padding:9px 12px;font-size:12px;margin-top:8px;}
-.sup-findings-hard{color:#c45f3c;}
-.sup-findings-soft{color:#c98a2e;}
-.sup-chat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:200px;max-height:38vh;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
-.sup-chat::-webkit-scrollbar{width:3px;}
-.sup-chat::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.sup-msg{padding:9px 12px;border-radius:7px;font-size:12.5px;line-height:1.65;white-space:pre-wrap;max-width:90%;}
-.sup-msg.user{background:rgba(74,127,181,.2);border:1px solid rgba(74,127,181,.3);color:var(--text2);align-self:flex-end;}
-.sup-msg.assistant{background:var(--bg2);border:1px solid var(--border);color:var(--text);align-self:flex-start;max-width:96%;}
-.sup-msg.sys{color:var(--text4);font-style:italic;font-size:11px;text-align:center;align-self:center;}
-.sup-inp-row{display:flex;gap:7px;align-items:flex-end;}
-.sup-inp{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;padding:8px 10px;outline:none;resize:none;min-height:38px;max-height:100px;transition:border-color .15s;}
-.sup-inp:focus{border-color:#4e7255;}
-.sup-inp::placeholder{color:var(--text4);}
-.sup-lock{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;text-align:center;margin:20px auto;max-width:360px;}
-.sup-lock-title{font-family:'Lora',serif;font-size:18px;color:var(--text);margin-bottom:6px;}
-.sup-lock-sub{font-size:12px;color:var(--text3);margin-bottom:16px;}
-.sup-lock-pill{font-size:10.5px;color:var(--text4);margin-top:12px;}
 
 /* ── AGENDA ── */
 .agenda-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
@@ -411,7 +379,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   <div class="logo"><div class="logo-mark">Ψ</div>Guarapsi</div>
   <div class="topbar-right">
     <button class="btn btn-ghost" onclick="showAgenda()" title="Agenda semanal">📅 Agenda</button>
-    <button class="btn btn-ghost" onclick="showSupervisao()" title="Supervisão de casos">🧠 Supervisão</button>
     <button class="btn btn-ghost" onclick="showModal('modal-patient')">+ Novo paciente</button>
   </div>
 </div>
@@ -648,24 +615,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
 </div>
 
-<!-- MODAL: SUPERVISÃO -->
-<div id="modal-supervisao" style="display:none;">
-  <div class="overlay" onclick="if(event.target===this)hideSupervisao()">
-    <div class="modal" style="width:780px;max-width:97vw;max-height:92vh;display:flex;flex-direction:column;">
-      <div class="modal-head" style="flex-shrink:0;">
-        <span class="modal-title">🧠 Supervisão de Casos</span>
-        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-          <span style="font-size:10.5px;color:var(--text3);">🔐 De-identificado · AES-256</span>
-          <button class="btn-x" onclick="hideSupervisao()">×</button>
-        </div>
-      </div>
-      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
-        <div id="sup-content" style="flex:1;overflow-y:auto;padding:16px 20px 20px;"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- PRINT AREA (hidden, only visible on print) -->
 <div id="print-area" style="display:none;"></div>
 
@@ -881,10 +830,6 @@ function init(){
   const savedOpen = (() => { try{ return JSON.parse(localStorage.getItem('guarapsi_ubsopen'))||{}; }catch{ return {}; } })();
   UBS_LIST.forEach(u=>{ ubsOpen[u] = savedOpen[u] !== false; }); // default open
   initFirebase(); // handles showLogin / showApp
-  document.addEventListener('click', e => {
-    if(!e.target.closest('#dots-btn') && !e.target.closest('#dots-menu'))
-      document.getElementById('dots-menu').classList.remove('open');
-  });
 }
 
 /* ═══════════ SIDEBAR ═══════════ */
@@ -1124,17 +1069,6 @@ function closeImprove(){
 }
 
 /* ═══════════ DOTS MENU ═══════════ */
-function toggleDots(e){
-  e.stopPropagation();
-  document.getElementById('dots-menu').classList.toggle('open');
-}
-function dotsAction(type){
-  document.getElementById('dots-menu').classList.remove('open');
-  if(type==='analyze') runAnalysis();
-  else if(type==='evolucao-ia') runEvolutionAnalysis();
-  else aiQuick(type);
-}
-
 /* ═══════════ SESSION ANALYSIS ═══════════ */
 async function runAnalysis(){
   const body=document.getElementById('f-body')?.value?.trim();
@@ -1287,270 +1221,6 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){ closeDrawer(); }
 });
 
-/* ═══════════ SUPERVISÃO ═══════════ */
-const SUP_SALT_KEY = 'guarapsi_sup_salt';
-const SUP_DATA_KEY = 'guarapsi_sup_data';
-const sup_enc = new TextEncoder(), sup_dec = new TextDecoder();
-const sup_b64  = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
-const sup_ub64 = s   => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-
-let supKey = null, supCases = [], supView = 'lock', supSelId = null, supSending = false, supChatErr = '';
-
-const SUP_PATTERNS = [
-  {tipo:'CPF',        sev:'hard', re:/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g},
-  {tipo:'Telefone',   sev:'hard', re:/\(?\b\d{2}\)?\s?9?\d{4}[-\s]?\d{4}\b/g},
-  {tipo:'E-mail',     sev:'hard', re:/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g},
-  {tipo:'Data',       sev:'hard', re:/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g},
-  {tipo:'Cartão SUS', sev:'hard', re:/\b\d{3}\s?\d{4}\s?\d{4}\s?\d{4}\b/g},
-  {tipo:'Nome próprio',sev:'soft',re:/\b[A-ZÀ-Ý][a-zà-ÿ]{2,}(?:\s+(?:d[aeo]s?|e)\s+|\s+)[A-ZÀ-Ý][a-zà-ÿ]{2,}/g}
-];
-
-function supScan(text){
-  if(!text) return [];
-  const out = [];
-  for(const p of SUP_PATTERNS){
-    const m = text.match(p.re);
-    if(m) for(const t of [...new Set(m)]) out.push({tipo:p.tipo, sev:p.sev, trecho:t});
-  }
-  return out;
-}
-
-async function supDeriveKey(pass, salt){
-  const base = await crypto.subtle.importKey('raw', sup_enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'},
-    base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
-  );
-}
-async function supEncrypt(obj){
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, supKey, sup_enc.encode(JSON.stringify(obj)));
-  return JSON.stringify({iv:sup_b64(iv), ct:sup_b64(ct)});
-}
-async function supDecrypt(str){
-  const {iv, ct} = JSON.parse(str);
-  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:sup_ub64(iv)}, supKey, sup_ub64(ct));
-  return JSON.parse(sup_dec.decode(pt));
-}
-async function supPersist(){ localStorage.setItem(SUP_DATA_KEY, await supEncrypt(supCases)); }
-
-function showSupervisao(){ supRender(); showModal('modal-supervisao'); }
-function hideSupervisao(){ hideModal('modal-supervisao'); }
-
-function supRender(){
-  if(supView==='lock')   supRenderLock();
-  else if(supView==='list')   supRenderList();
-  else if(supView==='new')    supRenderNew();
-  else if(supView==='detail') supRenderDetail();
-}
-
-function supRenderLock(){
-  const first = !localStorage.getItem(SUP_SALT_KEY);
-  document.getElementById('sup-content').innerHTML = `
-    <div class="sup-lock">
-      <div class="sup-lock-title">🔒 Cofre de Supervisão</div>
-      <div class="sup-lock-sub">${first ? 'Crie uma senha para proteger os casos de supervisão.' : 'Digite sua senha para acessar os casos.'}</div>
-      ${first ? `
-        <div class="fld"><label>Senha (mín. 6 caracteres)</label><input type="password" id="sup-pass" placeholder="••••••••"></div>
-        <div class="fld"><label>Confirmar senha</label><input type="password" id="sup-pass2" placeholder="••••••••"></div>
-      ` : `
-        <div class="fld"><label>Senha</label><input type="password" id="sup-pass" placeholder="••••••••"></div>
-      `}
-      <div style="color:#c46060;font-size:11.5px;min-height:16px;margin-bottom:8px;" id="sup-lock-err"></div>
-      <button class="btn btn-primary" style="width:100%;" onclick="${first?'supCreateVault()':'supUnlock()'}">
-        ${first ? 'Criar cofre e entrar' : 'Desbloquear'}
-      </button>
-      <div class="sup-lock-pill">🛡️ Criptografia AES-256 local. Os dados não saem do dispositivo.</div>
-    </div>`;
-  const inp = document.getElementById('sup-pass');
-  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') first ? supCreateVault() : supUnlock(); });
-  setTimeout(()=>{ if(inp) inp.focus(); }, 50);
-}
-
-async function supCreateVault(){
-  const p = document.getElementById('sup-pass').value;
-  const p2 = document.getElementById('sup-pass2').value;
-  const errEl = document.getElementById('sup-lock-err');
-  if(p.length < 6){ errEl.textContent = 'Use ao menos 6 caracteres.'; return; }
-  if(p !== p2){ errEl.textContent = 'As senhas não coincidem.'; return; }
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  localStorage.setItem(SUP_SALT_KEY, sup_b64(salt));
-  supKey = await supDeriveKey(p, salt);
-  supCases = []; await supPersist();
-  supView = 'list'; supRender();
-}
-
-async function supUnlock(){
-  const p = document.getElementById('sup-pass').value;
-  const errEl = document.getElementById('sup-lock-err');
-  const salt = sup_ub64(localStorage.getItem(SUP_SALT_KEY));
-  supKey = await supDeriveKey(p, salt);
-  try {
-    const raw = localStorage.getItem(SUP_DATA_KEY);
-    supCases = raw ? await supDecrypt(raw) : [];
-    supView = 'list'; supRender();
-  } catch(e) {
-    supKey = null; errEl.textContent = 'Senha incorreta.';
-  }
-}
-
-function supRenderList(){
-  const banner = `<div class="sup-banner">🔐 Espaço <b>de-identificado</b> e criptografado, separado do prontuário.<br>Não insira nome completo, CPF, data de nascimento completa, endereço ou telefone.</div>`;
-  const items = supCases.length
-    ? supCases.map(c => `
-      <button class="sup-case-item" onclick="supOpen('${c.id}')">
-        <div class="sup-case-title">${supEsc(c.codigo)}</div>
-        <div class="sup-case-meta">${supEsc([c.faixa,c.genero,c.contexto].filter(Boolean).join(' · '))}</div>
-        <div class="sup-case-preview">${supEsc((c.resumo||'').slice(0,100))}${(c.resumo||'').length>100?'…':''}</div>
-        <div class="sup-case-meta" style="margin-top:4px;">${c.chat.length} mensagens</div>
-      </button>`).join('')
-    : `<div style="text-align:center;color:var(--text4);font-style:italic;padding:32px;">Nenhum caso ainda. Crie o primeiro.</div>`;
-
-  document.getElementById('sup-content').innerHTML = `
-    ${banner}
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Casos salvos</span>
-      <button class="btn btn-primary btn-sm" onclick="supGoNew()">+ Novo caso</button>
-    </div>
-    ${items}`;
-}
-
-const supEsc = s => (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-
-function supGoNew(){ supView = 'new'; supRender(); }
-function supOpen(id){ supSelId = id; supView = 'detail'; supChatErr = ''; supRender(); }
-function supBack(){ supView = 'list'; supRender(); }
-const supSelected = () => supCases.find(c => c.id === supSelId);
-
-let supFormFindings = [];
-function supRenderNew(){
-  const f = supFormFindings;
-  const fHtml = f.length ? `<div class="sup-findings">⚠️ Possíveis dados identificáveis:<br>${
-    f.map(i=>`<div class="sup-findings-${i.sev}">• <b>${i.tipo}</b>: <code style="background:var(--bg3);padding:1px 4px;border-radius:3px;">${supEsc(i.trecho)}</code> ${i.sev==='hard'?'— remova antes de salvar':'— confirme que não identifica'}</div>`).join('')
-  }</div>` : '';
-
-  document.getElementById('sup-content').innerHTML = `
-    <button class="btn btn-ghost btn-sm" onclick="supBack()" style="margin-bottom:10px;">‹ Voltar</button>
-    <div style="font-family:'Lora',serif;font-size:16px;color:var(--text);margin-bottom:14px;">Novo caso de-identificado</div>
-    <div class="sup-field"><label>Código / apelido *</label><input id="sup-codigo" placeholder="ex.: Caso 014 — adolescente, luto"></div>
-    <div class="sup-field-row">
-      <div class="sup-field"><label>Faixa etária</label><input id="sup-faixa" placeholder="ex.: 30–40 anos"></div>
-      <div class="sup-field"><label>Gênero (opcional)</label><input id="sup-genero" placeholder="ex.: feminino"></div>
-    </div>
-    <div class="sup-field"><label>Contexto / abordagem</label><input id="sup-contexto" placeholder="ex.: APS, psicoterapia breve, 3ª sessão"></div>
-    <div class="sup-field"><label>Resumo do caso</label><textarea id="sup-resumo" rows="4" placeholder="Quadro, demanda, evolução — sem dados identificáveis."></textarea></div>
-    <div class="sup-field"><label>Hipóteses iniciais (opcional)</label><textarea id="sup-hipoteses" rows="2" placeholder="Hipóteses diagnósticas ou compreensivas…"></textarea></div>
-    ${fHtml}
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
-      <button class="btn btn-ghost btn-sm" onclick="supBack()">Cancelar</button>
-      <button class="btn btn-primary btn-sm" onclick="supTrySave()">Salvar caso</button>
-    </div>`;
-}
-
-async function supTrySave(){
-  const g = id => (document.getElementById(id)||{}).value || '';
-  const obj = { codigo:g('sup-codigo'), faixa:g('sup-faixa'), genero:g('sup-genero'),
-    contexto:g('sup-contexto'), resumo:g('sup-resumo'), hipoteses:g('sup-hipoteses') };
-  const found = supScan([obj.codigo,obj.contexto,obj.resumo,obj.hipoteses].join(' '));
-  supFormFindings = found;
-  if(found.some(x=>x.sev==='hard')){ supRenderNew(); return; }
-  if(found.some(x=>x.sev==='soft') && !window.__supSoftOk){ window.__supSoftOk=true; supRenderNew(); return; }
-  window.__supSoftOk = false;
-  if(!obj.codigo){ alert('Código é obrigatório.'); return; }
-  supCases.unshift({ id: Date.now().toString(36), ...obj, chat:[], criadoEm: new Date().toISOString() });
-  await supPersist();
-  supSelId = supCases[0].id; supView = 'detail'; supFormFindings = []; supRender();
-}
-
-function supRenderDetail(){
-  const c = supSelected();
-  const apiKey = getApiKey();
-  const msgs = c.chat.length
-    ? c.chat.map(m=>`<div class="sup-msg ${m.role==='user'?'user':'assistant'}">${supEsc(m.content)}</div>`).join('')
-    : `<div class="sup-msg sys">Comece a discussão. A IA recebe só o resumo de-identificado e o que você escrever.</div>`;
-
-  document.getElementById('sup-content').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <button class="btn btn-ghost btn-sm" onclick="supBack()">‹ Casos</button>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-ghost btn-sm" onclick="supExport()">⬇ Exportar</button>
-        <button class="btn btn-danger btn-sm" onclick="supDelete()">✕ Excluir</button>
-      </div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:12px;">
-      <div style="font-size:13.5px;font-weight:600;color:var(--text);">${supEsc(c.codigo)}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">${supEsc([c.faixa,c.genero,c.contexto].filter(Boolean).join(' · '))}</div>
-      ${c.resumo?`<div style="font-size:12.5px;color:var(--text2);margin-top:7px;">${supEsc(c.resumo)}</div>`:''}
-      ${c.hipoteses?`<div style="font-size:12px;color:var(--text3);margin-top:5px;"><b>Hipóteses:</b> ${supEsc(c.hipoteses)}</div>`:''}
-    </div>
-    <div class="sup-chat" id="sup-chat">${msgs}${supSending?'<div class="sup-msg sys">Pensando…</div>':''}</div>
-    ${supChatErr?`<div style="color:#c46060;font-size:11.5px;margin-bottom:6px;">${supEsc(supChatErr)}</div>`:''}
-    <div class="sup-inp-row">
-      <textarea class="sup-inp" id="sup-input" rows="2" placeholder="Pergunte, levante hipóteses, peça leitura clínica… (requer chave de API)" ${supSending?'disabled':''}></textarea>
-      <button class="btn btn-primary btn-sm" onclick="supSend()" ${supSending?'disabled':''} style="height:38px;padding:0 14px;">Enviar</button>
-    </div>
-    <div style="font-size:10.5px;color:var(--text4);margin-top:6px;">🛡️ Cada mensagem é escaneada — identificadores fortes bloqueiam o envio.</div>`;
-
-  const chat = document.getElementById('sup-chat');
-  if(chat) chat.scrollTop = chat.scrollHeight;
-  const inp = document.getElementById('sup-input');
-  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault(); supSend();}});
-}
-
-async function supSend(){
-  supChatErr = '';
-  const c = supSelected();
-  const text = (document.getElementById('sup-input')||{}).value?.trim();
-  if(!text) return;
-
-  const found = supScan(text);
-  if(found.some(x=>x.sev==='hard')){
-    supChatErr = 'Mensagem contém dado identificável (' + found.filter(x=>x.sev==='hard').map(x=>x.tipo).join(', ') + '). Remova antes de enviar.';
-    supRenderDetail(); return;
-  }
-
-  supSending = true;
-  c.chat.push({role:'user', content:text});
-  await supPersist(); supRenderDetail();
-
-  const system = `Você é um apoio de supervisão clínica para um psicólogo do SUS (APS/eMulti), com base em Psicoterapia Breve (modelo focal), com elementos de ACT e perspectiva trauma-informed.
-Regras: recebe SOMENTE material de-identificado; não emite diagnóstico definitivo nem prescrição; trabalha com hipóteses compreensivas; dá atenção a risco e lembra articulação com equipe/CAPS quando pertinente; faz perguntas reflexivas de supervisão; responde em PT-BR, conciso e prático.
-
---- Caso (de-identificado) ---
-Código: ${c.codigo}
-Faixa etária: ${c.faixa||'—'}
-Gênero: ${c.genero||'—'}
-Contexto: ${c.contexto||'—'}
-Resumo: ${c.resumo||'—'}
-Hipóteses: ${c.hipoteses||'—'}`;
-
-  try {
-    const data = await callClaude({
-      model:'claude-sonnet-4-20250514', max_tokens:1000, system,
-      messages: c.chat.map(m=>({role:m.role, content:m.content}))
-    });
-    const reply = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('\n') || '(sem resposta)';
-    c.chat.push({role:'assistant', content:reply});
-  } catch(e){ supChatErr = 'Erro: ' + e.message; }
-
-  supSending = false;
-  await supPersist(); supRenderDetail();
-}
-
-function supExport(){
-  const c = supSelected();
-  const blob = new Blob([JSON.stringify(c,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = c.codigo.replace(/\s+/g,'_') + '.json';
-  a.click();
-}
-
-async function supDelete(){
-  if(!confirm('Excluir este caso? Não há como desfazer.')) return;
-  supCases = supCases.filter(x=>x.id!==supSelId);
-  await supPersist(); supBack();
-}
 
 /* ═══════════ AGENDA ═══════════ */
 // Semana A e B quinzenal
