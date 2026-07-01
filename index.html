@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guarapsi</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+:root{
+  --bg:#2a2a2e;--bg2:#232327;--bg3:#1e1e22;
+  --white:#333338;--border:#44444a;--border2:#555560;
+  --text:#e8e8ec;--text2:#b0b0b8;--text3:#78787f;--text4:#55555c;
+  --red:#c46060;--sidebar:248px;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+/* ── TOPBAR ── */
+#topbar{height:50px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;box-shadow:0 1px 6px rgba(0,0,0,.3);}
+.logo{font-family:'Lora',serif;font-size:21px;font-weight:600;color:#7ab880;display:flex;align-items:center;gap:8px;}
+.logo-mark{width:30px;height:30px;background:#3a5c40;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;}
+.logo-sub{font-size:11px;color:var(--text3);border-left:1px solid var(--border2);padding-left:12px;letter-spacing:.03em;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:7px;}
+
+/* ── BUTTONS ── */
+.btn{height:30px;padding:0 13px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;border:none;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-ghost:hover{background:var(--bg2);color:var(--text);}
+.btn-primary{background:#3a5c40;border:1px solid #4e7255;color:#d8f0dc;}
+.btn-primary:hover{background:#4e7255;}
+.btn-danger{background:transparent;border:1px solid #6a3030;color:var(--red);}
+.btn-danger:hover{background:rgba(180,60,60,.15);}
+.btn-sm{height:26px;padding:0 10px;font-size:11.5px;}
+.btn-icon{width:28px;height:28px;padding:0;background:transparent;border:1px solid var(--border);color:var(--text3);border-radius:6px;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.btn-icon:hover{background:var(--bg2);color:var(--text);}
+.btn-x{background:none;border:none;color:var(--text3);font-size:19px;cursor:pointer;padding:1px 4px;border-radius:3px;line-height:1;}
+.btn-x:hover{background:var(--bg2);color:var(--text);}
+
+/* ── LAYOUT ── */
+#workspace{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+#sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.sidebar-top{padding:10px;border-bottom:1px solid var(--border);}
+.sidebar-top .btn{width:100%;justify-content:center;}
+.search-wrap{padding:7px 9px;border-bottom:1px solid var(--border);}
+.search-inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 9px 5px 26px;font-size:11.5px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2378787f' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:7px center;transition:border-color .15s;}
+.search-inp:focus{border-color:#4e7255;}
+.search-inp::placeholder{color:var(--text4);}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:5px 0;}
+.sidebar-scroll::-webkit-scrollbar{width:3px;}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* UBS — taller rows */
+.ubs-block{margin-bottom:2px;}
+.ubs-btn{width:calc(100% - 8px);margin:0 4px;display:flex;align-items:center;gap:7px;padding:8px 10px;background:transparent;border:none;cursor:pointer;border-radius:6px;transition:background .1s;}
+.ubs-btn:hover{background:var(--bg3);}
+.ubs-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.ubs-arrow{font-size:8px;color:var(--text4);transition:transform .2s;flex-shrink:0;}
+.ubs-arrow.r{transform:rotate(90deg);}
+.ubs-label{font-size:12px;font-weight:600;letter-spacing:.04em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ubs-badge{font-size:9.5px;border-radius:9px;padding:2px 6px;font-family:'DM Mono',monospace;flex-shrink:0;background:var(--bg3);color:var(--text4);}
+.pat-list{display:none;padding-bottom:4px;}
+.pat-list.open{display:block;}
+.pat-row{width:calc(100% - 8px);margin:0 4px;display:flex;align-items:center;gap:6px;padding:5px 10px 5px 24px;cursor:pointer;border-radius:5px;transition:background .1s;border-left:2px solid transparent;}
+.pat-row:hover{background:var(--bg3);}
+.pat-name{font-size:12px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pat-nsess{font-size:9.5px;color:var(--text4);font-family:'DM Mono',monospace;flex-shrink:0;}
+.no-pat{padding:4px 24px;font-size:11px;color:var(--text4);font-style:italic;}
+
+/* ── MAIN / WELCOME ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);}
+.welcome-psi{font-size:52px;font-family:'Lora',serif;color:var(--border2);}
+.welcome-name{font-family:'Lora',serif;font-size:24px;color:var(--text3);font-weight:400;}
+.welcome-hint{font-size:12px;color:var(--text4);margin-top:4px;}
+
+/* ── SLIDE DRAWER ── */
+#slide-panel{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-start;justify-content:flex-end;pointer-events:none;}
+#slide-panel.open{pointer-events:all;}
+.slide-overlay{position:absolute;inset:0;background:rgba(30,25,20,.3);opacity:0;transition:opacity .25s;backdrop-filter:blur(2px);}
+#slide-panel.open .slide-overlay{opacity:1;}
+.slide-drawer{
+  position:relative;width:800px;max-width:96vw;height:100%;
+  background:var(--white);box-shadow:-8px 0 40px rgba(0,0,0,.12);
+  display:flex;flex-direction:row;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.25,.46,.45,.94);
+  border-left:1px solid var(--border);overflow:hidden;
+}
+/* colored accent bar on the right edge */
+#drawer-color-bar{
+  width:6px;flex-shrink:0;
+  background:#888;
+  transition:background .3s;
+  order:99;
+}
+/* inner content takes remaining space */
+.drawer-inner{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;
+}
+#slide-panel.open .slide-drawer{transform:translateX(0);}
+
+/* drawer header — fixed height */
+.drawer-head{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px 9px;border-bottom:1px solid var(--border);
+  flex-shrink:0;background:var(--bg2);min-height:54px;
+}
+.drawer-ubs-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.drawer-patient-name{font-family:'Lora',serif;font-size:15px;font-weight:500;color:var(--text);}
+.drawer-meta{font-size:10.5px;color:var(--text3);font-family:'DM Mono',monospace;}
+.drawer-actions{display:flex;gap:5px;align-items:center;margin-left:auto;flex-wrap:nowrap;}
+
+/* drawer body fills remaining height */
+.drawer-body{flex:1;display:flex;overflow:hidden;min-height:0;}
+
+/* sessions column */
+.sess-col{width:185px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg3);overflow:hidden;}
+.sess-col-head{padding:8px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.sess-col-title{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);}
+.btn-new-sess{width:22px;height:22px;border:none;border-radius:4px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .15s;}
+.sess-list{flex:1;overflow-y:auto;padding:4px 0;}
+.sess-list::-webkit-scrollbar{width:3px;}
+.sess-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.sess-item{padding:7px 10px;cursor:pointer;border-left:3px solid transparent;transition:background .1s;}
+.sess-item:hover{background:var(--bg2);}
+.sess-num{font-size:9.5px;font-family:'DM Mono',monospace;color:var(--text4);margin-bottom:1px;}
+.sess-date{font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:1px;}
+.sess-preview{font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic;}
+.sess-empty{padding:14px 10px;font-size:11.5px;color:var(--text4);text-align:center;font-style:italic;line-height:1.7;}
+
+/* editor column — scrollable */
+.editor-col{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0;background:var(--bg);}
+.editor-col::-webkit-scrollbar{width:4px;}
+.editor-col::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+#editor-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text4);min-height:200px;}
+#editor-placeholder .ico{font-size:34px;}
+#editor-placeholder p{font-size:12.5px;}
+
+/* PAPER */
+.paper{margin:18px 20px 28px;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 20px rgba(0,0,0,.35);overflow:hidden;background:var(--white);}
+.paper-top{border-bottom:1px solid var(--border);padding:14px 18px 12px;background:var(--bg2);}
+.paper-top-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end;}
+.field-group{display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px;}
+.field-group.narrow{flex:none;min-width:65px;}
+.field-lbl{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);}
+.field-inp{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text);outline:none;width:100%;transition:border-color .15s;}
+.field-inp[readonly]{color:var(--text2);}
+.paper-title-inp{width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--border2);padding:3px 1px;font-family:'Lora',serif;font-size:17px;font-weight:500;color:var(--text);outline:none;transition:border-color .15s;}
+.paper-title-inp::placeholder{color:var(--text4);}
+
+/* body */
+.paper-body{padding:0;}
+.paper-textarea{width:100%;min-height:340px;background:transparent;border:none;font-family:'Lora',serif;font-size:15px;line-height:1.85;color:var(--text);outline:none;resize:vertical;padding:14px 18px;}
+.paper-textarea::placeholder{color:var(--text4);font-style:italic;}
+.paper-footer{border-top:1px solid var(--border);padding:9px 18px;display:flex;align-items:center;gap:7px;background:var(--bg2);flex-shrink:0;}
+.save-msg{font-size:10.5px;font-family:'DM Mono',monospace;opacity:0;transition:opacity .4s;margin-left:4px;}
+.save-msg.show{opacity:1;}
+
+/* improve suggestion panel (inside editor col, below paper) */
+#improve-panel{display:none;margin:0 20px 24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);overflow:hidden;}
+.improve-head{padding:10px 14px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);}
+.improve-head-title{font-size:12px;font-weight:600;color:var(--text2);}
+.improve-head-sub{font-size:10.5px;color:var(--text3);}
+.improve-actions{display:flex;gap:6px;align-items:center;}
+.improve-content{padding:12px 14px;font-family:'Lora',serif;font-size:14.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;max-height:300px;overflow-y:auto;}
+.improve-content::-webkit-scrollbar{width:3px;}
+.improve-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.improve-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--bg);}
+.improve-loading{padding:20px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-size:12px;}
+
+/* ── DOTS MENU ── */
+.dots-wrap{position:relative;}
+.dots-menu{
+  position:absolute;top:calc(100% + 5px);right:0;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:7px;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);z-index:200;
+  min-width:195px;padding:4px 0;
+  display:none;
+}
+.dots-menu.open{display:block;animation:popIn .15s ease;}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.dots-item{padding:7px 13px;font-size:12.5px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s;}
+.dots-item:hover{background:var(--bg3);color:var(--text);}
+.dots-sep{height:1px;background:var(--border);margin:3px 0;}
+
+/* ── AI DOCUMENTS PANEL ── */
+#ai-panel{
+  position:fixed;right:0;top:50px;bottom:22px; /* leave room for statusbar */
+  width:350px;background:var(--white);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden; /* CRITICAL */
+  transform:translateX(100%);transition:transform .25s ease;
+  z-index:45;box-shadow:-4px 0 20px rgba(0,0,0,.08);
+}
+#ai-panel.open{transform:translateX(0);}
+.ai-head{padding:12px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ai-head-title{font-size:13px;font-weight:600;color:var(--text);flex:1;}
+.ai-head-sub{font-size:10.5px;color:var(--text3);}
+.ai-ctx{padding:6px 12px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text3);flex-shrink:0;}
+.ai-ctx b{color:#7ab880;}
+/* scrollable messages — the key fix */
+.ai-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;min-height:0;}
+.ai-msgs::-webkit-scrollbar{width:3px;}
+.ai-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.ai-msg{padding:9px 12px;border-radius:6px;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.ai-msg.user{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);align-self:flex-end;max-width:90%;}
+.ai-msg.bot{background:var(--white);border:1px solid var(--border);color:var(--text);align-self:flex-start;max-width:96%;}
+.ai-msg.sys{background:transparent;border:1px dashed var(--border2);color:var(--text4);font-style:italic;font-size:10.5px;text-align:center;}
+.ai-typing{align-self:flex-start;display:flex;gap:4px;padding:9px 12px;flex-shrink:0;}
+.ai-typing span{width:5px;height:5px;background:#6b8f71;border-radius:50%;animation:bob 1.2s ease-in-out infinite;}
+.ai-typing span:nth-child(2){animation-delay:.15s;}
+.ai-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.ai-quick{display:flex;flex-wrap:wrap;gap:4px;padding:7px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+.qbtn{font-size:10.5px;padding:3px 8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .1s;}
+.qbtn:hover{background:var(--bg3);color:var(--text);}
+.ai-inp-row{display:flex;gap:6px;padding:8px 10px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+.ai-ta{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 9px;outline:none;resize:none;min-height:34px;max-height:80px;transition:border-color .15s;}
+.ai-ta:focus{border-color:#3a5c40;}
+.ai-ta::placeholder{color:var(--text4);}
+.btn-send{width:34px;height:34px;background:#3a5c40;border:none;border-radius:5px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+.btn-send:hover{background:#4e7255;}
+.btn-send:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px);animation:fadeIn .15s;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:11px;width:500px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:slideUp .18s ease;overflow:hidden;}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{padding:15px 20px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3);}
+.modal-title{font-family:'Lora',serif;font-size:17px;color:var(--text);}
+.modal-body{padding:17px 20px;}
+.modal-foot{padding:10px 20px 15px;display:flex;justify-content:flex-end;gap:8px;background:var(--bg3);}
+.fld{margin-bottom:12px;}
+.fld label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;transition:border-color .15s;}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:#4e7255;}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--text4);}
+.fld select option{background:var(--bg2);}
+.fld-row{display:flex;gap:10px;}
+.fld-row .fld{flex:1;}
+.confirm-msg{font-size:13px;line-height:1.6;color:var(--text2);}
+
+/* ── STATUS BAR ── */
+#statusbar{height:22px;background:#3a5c40;display:flex;align-items:center;padding:0 13px;gap:10px;flex-shrink:0;}
+
+/* ── SUPERVISÃO ── */
+.sup-banner{background:rgba(74,127,181,.1);border:1px solid rgba(74,127,181,.25);border-radius:7px;padding:9px 12px;font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6;}
+.sup-case-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;text-align:left;width:100%;}
+.sup-case-item:hover{border-color:var(--border2);}
+.sup-case-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.sup-case-meta{font-size:11px;color:var(--text3);}
+.sup-case-preview{font-size:11.5px;color:var(--text2);margin-top:5px;}
+.sup-field{margin-bottom:12px;}
+.sup-field label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;}
+.sup-field input,.sup-field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;transition:border-color .15s;resize:vertical;}
+.sup-field input:focus,.sup-field textarea:focus{border-color:#4e7255;}
+.sup-field input::placeholder,.sup-field textarea::placeholder{color:var(--text4);}
+.sup-field-row{display:flex;gap:10px;}
+.sup-field-row .sup-field{flex:1;}
+.sup-findings{background:rgba(196,95,60,.08);border:1px solid rgba(196,95,60,.25);border-radius:6px;padding:9px 12px;font-size:12px;margin-top:8px;}
+.sup-findings-hard{color:#c45f3c;}
+.sup-findings-soft{color:#c98a2e;}
+.sup-chat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:200px;max-height:38vh;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
+.sup-chat::-webkit-scrollbar{width:3px;}
+.sup-chat::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.sup-msg{padding:9px 12px;border-radius:7px;font-size:12.5px;line-height:1.65;white-space:pre-wrap;max-width:90%;}
+.sup-msg.user{background:rgba(74,127,181,.2);border:1px solid rgba(74,127,181,.3);color:var(--text2);align-self:flex-end;}
+.sup-msg.assistant{background:var(--bg2);border:1px solid var(--border);color:var(--text);align-self:flex-start;max-width:96%;}
+.sup-msg.sys{color:var(--text4);font-style:italic;font-size:11px;text-align:center;align-self:center;}
+.sup-inp-row{display:flex;gap:7px;align-items:flex-end;}
+.sup-inp{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;padding:8px 10px;outline:none;resize:none;min-height:38px;max-height:100px;transition:border-color .15s;}
+.sup-inp:focus{border-color:#4e7255;}
+.sup-inp::placeholder{color:var(--text4);}
+.sup-lock{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;text-align:center;margin:20px auto;max-width:360px;}
+.sup-lock-title{font-family:'Lora',serif;font-size:18px;color:var(--text);margin-bottom:6px;}
+.sup-lock-sub{font-size:12px;color:var(--text3);margin-bottom:16px;}
+.sup-lock-pill{font-size:10.5px;color:var(--text4);margin-top:12px;}
+
+/* ── AGENDA ── */
+.agenda-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.agenda-week-label{font-family:'Lora',serif;font-size:15px;color:var(--text);font-weight:500;}
+.agenda-week-type{font-size:11px;color:var(--text3);margin-left:6px;font-family:'DM Sans',sans-serif;}
+.agenda-day{margin-bottom:8px;border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.agenda-day-head{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);}
+.agenda-day-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.agenda-day-name{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;}
+.agenda-day-ubs{font-size:11px;color:var(--text3);flex:1;}
+.agenda-day-date{font-size:11px;color:var(--text4);font-family:'DM Mono',monospace;}
+.agenda-patients{padding:4px 8px 6px;}
+.agenda-pat-row{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;transition:background .1s;}
+.agenda-pat-row:hover{background:var(--bg3);}
+.agenda-pat-name{font-size:12.5px;color:var(--text);flex:1;}
+.agenda-pat-mat{font-size:10.5px;color:var(--text4);font-family:'DM Mono',monospace;}
+.agenda-pat-sess{font-size:10.5px;color:var(--text3);}
+.agenda-pat-remove{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;padding:1px 4px;border-radius:3px;opacity:.5;}
+.agenda-pat-remove:hover{color:var(--red);opacity:1;}
+.agenda-empty{padding:8px 6px;font-size:11.5px;color:var(--text4);font-style:italic;}
+.agenda-btn-add{height:22px;padding:0 8px;font-size:11px;background:transparent;border:1px dashed var(--border2);color:var(--text3);border-radius:4px;cursor:pointer;margin:2px 6px 6px;font-family:'DM Sans',sans-serif;transition:all .1s;}
+.agenda-btn-add:hover{background:var(--bg3);color:var(--text);}
+.agenda-today{border-color:var(--border2);box-shadow:0 0 0 1px var(--border2);}
+.agenda-today .agenda-day-head{background:var(--bg3);}
+
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: fixed; inset: 0;
+    background: #fff; color: #000;
+    font-family: 'Georgia', serif;
+    padding: 32px 48px;
+    font-size: 13pt; line-height: 1.8;
+  }
+  #print-area .pr-header { border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 20px; }
+  #print-area .pr-title { font-size: 18pt; font-weight: bold; margin-bottom: 6px; }
+  #print-area .pr-meta { font-size: 10pt; color: #444; display: flex; gap: 24px; flex-wrap: wrap; }
+  #print-area .pr-body { margin-top: 20px; white-space: pre-wrap; }
+  #print-area .pr-footer { margin-top: 40px; border-top: 1px solid #999; padding-top: 12px; font-size: 10pt; color: #666; }
+}
+.sb{font-size:11px;color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-weight:400;}
+.sb b{color:#fff;font-weight:600;}
+.sb-sep{color:rgba(255,255,255,.25);}
+
+/* ── API KEY BANNER ── */
+#api-banner{
+  background:#2a2a1e;border-bottom:1px solid #4a4a28;
+  padding:8px 18px;display:flex;align-items:center;gap:10px;
+  font-size:12px;color:#c0b870;flex-shrink:0;
+}
+#api-banner.hidden{display:none;}
+.api-banner-text{flex:1;}
+.api-banner-text b{color:#e0d890;}
+.api-key-inp{
+  height:26px;padding:0 9px;
+  background:var(--bg3);border:1px solid #5a5a38;border-radius:5px;
+  font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text);
+  outline:none;width:280px;transition:border-color .15s;
+}
+.api-key-inp:focus{border-color:#8a8a50;}
+.btn-api-save{height:26px;padding:0 12px;background:#4a4a28;border:none;border-radius:5px;color:#e0d890;font-size:11.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.btn-api-save:hover{background:#5a5a38;}
+.btn-api-dismiss{background:none;border:none;color:#7a7a50;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
+.btn-api-dismiss:hover{color:#c0b870;}
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:200;
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:14px;padding:36px 40px 32px;
+  width:360px;max-width:95vw;
+  box-shadow:0 24px 64px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;align-items:center;gap:0;
+}
+.login-logo{font-family:'Lora',serif;font-size:42px;color:#3a5c40;margin-bottom:4px;}
+.login-title{font-family:'Lora',serif;font-size:22px;color:var(--text);margin-bottom:4px;}
+.login-sub{font-size:11.5px;color:var(--text3);margin-bottom:28px;letter-spacing:.03em;}
+.login-field{width:100%;margin-bottom:12px;}
+.login-field label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;}
+.login-field input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:13px;padding:9px 12px;outline:none;transition:border-color .15s;
+}
+.login-field input:focus{border-color:#4e7255;}
+.login-err{font-size:11.5px;color:#c46060;min-height:18px;margin-bottom:6px;text-align:center;}
+.login-btn{
+  width:100%;height:38px;background:#3a5c40;border:none;border-radius:7px;
+  color:#d8f0dc;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;
+  cursor:pointer;transition:background .15s;margin-top:4px;
+}
+.login-btn:hover{background:#4e7255;}
+.login-btn:disabled{opacity:.5;cursor:wait;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex;">
+  <div class="login-box">
+    <div class="login-logo">Ψ</div>
+    <div class="login-title">Guarapsi</div>
+    <div class="login-sub">Sistema de Atendimento Psicológico</div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app-shell" style="display:none;flex-direction:column;flex:1;height:100%;overflow:hidden;">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo"><div class="logo-mark">Ψ</div>Guarapsi</div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost" onclick="showAgenda()" title="Agenda semanal">📅 Agenda</button>
+    <button class="btn btn-ghost" onclick="showSupervisao()" title="Supervisão de casos">🧠 Supervisão</button>
+    <button class="btn btn-ghost" onclick="showModal('modal-patient')">+ Novo paciente</button>
+  </div>
+</div>
+
+<div id="workspace">
+  <div id="sidebar">
+    <div class="sidebar-top">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showModal('modal-patient')">+ Adicionar paciente</button>
+    </div>
+    <div class="search-wrap">
+      <input class="search-inp" id="search" type="text" placeholder="Buscar paciente…" oninput="renderSidebar(this.value)">
+    </div>
+    <div class="sidebar-scroll" id="tree"></div>
+  </div>
+  <div id="main">
+    <div id="welcome">
+      <div class="welcome-psi">Ψ</div>
+      <div class="welcome-name">Guarapsi</div>
+      <div class="welcome-hint">Selecione um paciente na barra lateral</div>
+    </div>
+  </div>
+</div>
+
+<div id="statusbar">
+  <span class="sb">Guarapsi v2.2</span>
+  <span class="sb-sep">|</span>
+  <span class="sb">UBS: <b id="sb-ubs">—</b></span>
+  <span class="sb-sep">|</span>
+  <span class="sb">Paciente: <b id="sb-pac">—</b></span>
+  <span class="sb-sep">|</span>
+  <span class="sb">Sessões: <b id="sb-sess">—</b></span>
+  <span class="sb-sep">|</span>
+  <span class="sb" id="sb-save" style="margin-left:auto;">dados locais</span>
+  <span class="sb-sep">|</span>
+  <span class="sb">👤 <b id="sb-user" style="color:#a0e0b0;">—</b></span>
+  <span class="sb-sep">|</span>
+  <span class="sb" style="cursor:pointer;opacity:.7;" onclick="doLogout()" title="Sair">Sair ↩</span>
+</div>
+
+<!-- ══════════════════════════════
+     SLIDE DRAWER
+══════════════════════════════ -->
+<div id="slide-panel">
+  <div class="slide-overlay" onclick="closeDrawer()"></div>
+  <div class="slide-drawer">
+    <div class="drawer-inner">
+
+    <div class="drawer-head">
+      <div class="drawer-ubs-dot" id="dh-dot"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="drawer-patient-name" id="dh-name">—</div>
+        <div style="display:flex;gap:10px;margin-top:1px;">
+          <span class="drawer-meta" id="dh-mat"></span>
+          <span class="drawer-meta" id="dh-ubs"></span>
+        </div>
+      </div>
+      <div class="drawer-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditPatient()">✎ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeletePatient()">✕ Paciente</button>
+        <!-- DOTS -->
+        <button class="btn-x" onclick="closeDrawer()" title="Fechar" style="font-size:21px;margin-left:2px;">×</button>
+      </div>
+    </div>
+
+    <div class="drawer-body">
+      <!-- sessions column -->
+      <div class="sess-col">
+        <div class="sess-col-head">
+          <span class="sess-col-title">Sessões</span>
+          <button class="btn-new-sess" id="new-sess-btn" onclick="newSession()">+</button>
+        </div>
+        <div class="sess-list" id="sess-list"></div>
+      </div>
+
+      <!-- editor column -->
+      <div class="editor-col" id="editor-col">
+        <div id="editor-placeholder">
+          <div class="ico">📋</div>
+          <p>Selecione ou crie uma sessão</p>
+        </div>
+        <div id="doc-paper" style="display:none;">
+          <div class="paper">
+            <div class="paper-top">
+              <div class="paper-top-row">
+                <div class="field-group">
+                  <span class="field-lbl">Data</span>
+                  <input class="field-inp" type="date" id="f-date">
+                </div>
+                <div class="field-group">
+                  <span class="field-lbl">Matrícula</span>
+                  <input class="field-inp" type="text" id="f-mat" readonly>
+                </div>
+                <div class="field-group narrow">
+                  <span class="field-lbl">Sessão Nº</span>
+                  <input class="field-inp" type="text" id="f-num" style="text-align:center;">
+                </div>
+              </div>
+              <div class="paper-top-row" style="margin-bottom:10px;">
+                <div class="field-group">
+                  <span class="field-lbl">Paciente</span>
+                  <input class="field-inp" type="text" id="f-pac" readonly>
+                </div>
+                <div class="field-group">
+                  <span class="field-lbl">Unidade</span>
+                  <input class="field-inp" type="text" id="f-ubs" readonly>
+                </div>
+              </div>
+              <div class="field-group">
+                <span class="field-lbl">Título / Tema</span>
+                <input class="paper-title-inp" type="text" id="f-title" placeholder="Ex: Avaliação inicial, Escuta ativa, Crise…">
+              </div>
+            </div>
+
+            <div class="paper-body">
+              <textarea class="paper-textarea" id="f-body" placeholder="Escreva o relato da sessão aqui…&#10;&#10;Descreva: apresentação do paciente, queixas, observações clínicas, intervenções realizadas, resposta ao atendimento, encaminhamentos e próximos passos."></textarea>
+            </div>
+            <div class="paper-footer">
+              <button class="btn btn-primary btn-sm" onclick="saveSession()">💾 Salvar</button>
+              <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Fechar</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteSession()">✕ Excluir sessão</button>
+              <span class="save-msg" id="save-msg" style="color:#7ab880;">✓ Salvo</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="printSession()" title="Imprimir sessão">🖨 Imprimir</button>
+            </div>
+          </div>
+
+        </div><!-- /doc-paper -->
+      </div><!-- /editor-col -->
+    </div><!-- /drawer-body -->
+    </div><!-- /drawer-inner -->
+    <div id="drawer-color-bar"></div>
+  </div><!-- /slide-drawer -->
+</div><!-- /slide-panel -->
+
+<!-- MODAL: NEW PATIENT -->
+<div id="modal-patient" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideModal('modal-patient')">
+    <div class="modal">
+      <div class="modal-head"><span class="modal-title">Novo Paciente</span><button class="btn-x" onclick="hideModal('modal-patient')">×</button></div>
+      <div class="modal-body">
+        <div class="fld"><label>Nome completo *</label><input type="text" id="np-name" placeholder="Nome do paciente"></div>
+        <div class="fld-row">
+          <div class="fld"><label>Matrícula *</label><input type="text" id="np-mat" placeholder="Ex: 202400001"></div>
+          <div class="fld"><label>Data de nascimento</label><input type="date" id="np-dob"></div>
+        </div>
+        <div class="fld"><label>UBS de atendimento *</label><select id="np-ubs"><option value="">— Selecione —</option></select></div>
+        <div class="fld"><label>Demanda / Observações iniciais</label><textarea id="np-obs" rows="3" placeholder="Queixa principal, encaminhamento, contexto…" style="resize:vertical;"></textarea></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="hideModal('modal-patient')">Cancelar</button>
+        <button class="btn btn-primary" onclick="createPatient()">Criar paciente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT PATIENT -->
+<div id="modal-edit" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideModal('modal-edit')">
+    <div class="modal">
+      <div class="modal-head"><span class="modal-title">Editar Paciente</span><button class="btn-x" onclick="hideModal('modal-edit')">×</button></div>
+      <div class="modal-body">
+        <div class="fld"><label>Nome completo *</label><input type="text" id="ep-name"></div>
+        <div class="fld-row">
+          <div class="fld"><label>Matrícula</label><input type="text" id="ep-mat"></div>
+          <div class="fld"><label>Data de nascimento</label><input type="date" id="ep-dob"></div>
+        </div>
+        <div class="fld"><label>UBS de atendimento</label><select id="ep-ubs"><option value="">— Selecione —</option></select></div>
+        <div class="fld"><label>Observações</label><textarea id="ep-obs" rows="3" style="resize:vertical;"></textarea></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="hideModal('modal-edit')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditPatient()">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM -->
+<div id="modal-confirm" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideModal('modal-confirm')">
+    <div class="modal" style="max-width:370px;">
+      <div class="modal-head"><span class="modal-title" id="conf-title">Confirmar</span><button class="btn-x" onclick="hideModal('modal-confirm')">×</button></div>
+      <div class="modal-body"><p class="confirm-msg" id="conf-msg"></p></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="hideModal('modal-confirm')">Cancelar</button>
+        <button class="btn btn-danger" id="conf-btn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AGENDA -->
+<div id="modal-agenda" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideModal('modal-agenda')">
+    <div class="modal" style="width:640px;max-width:97vw;max-height:88vh;display:flex;flex-direction:column;">
+      <div class="modal-head" style="flex-shrink:0;">
+        <span class="modal-title">📅 Agenda Semanal</span>
+        <button class="btn-x" onclick="hideModal('modal-agenda')">×</button>
+      </div>
+      <div class="modal-body" style="padding:0;flex:1;overflow-y:auto;min-height:0;">
+        <div id="agenda-content" style="padding:16px 20px 20px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: QUICK PATIENT (from agenda) -->
+<div id="modal-quick-patient" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideModal('modal-quick-patient')">
+    <div class="modal" style="width:420px;">
+      <div class="modal-head">
+        <span class="modal-title">Novo Paciente</span>
+        <button class="btn-x" onclick="hideModal('modal-quick-patient')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="fld">
+          <label>Nome completo *</label>
+          <input type="text" id="qp-name" placeholder="Nome do paciente">
+        </div>
+        <div class="fld">
+          <label>Matrícula *</label>
+          <input type="text" id="qp-mat" placeholder="Ex: 202400001">
+        </div>
+        <div class="fld" style="background:var(--bg3);border-radius:6px;padding:8px 10px;display:flex;align-items:center;gap:8px;">
+          <span class="agenda-day-dot" id="qp-ubs-dot" style="width:9px;height:9px;border-radius:50%;flex-shrink:0;"></span>
+          <span style="font-size:12px;color:var(--text2);">Unidade: <b id="qp-ubs-label" style="color:var(--text);"></b></span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="hideModal('modal-quick-patient')">Cancelar</button>
+        <button class="btn btn-primary" onclick="createQuickPatient()">Criar e agendar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SUPERVISÃO -->
+<div id="modal-supervisao" style="display:none;">
+  <div class="overlay" onclick="if(event.target===this)hideSupervisao()">
+    <div class="modal" style="width:780px;max-width:97vw;max-height:92vh;display:flex;flex-direction:column;">
+      <div class="modal-head" style="flex-shrink:0;">
+        <span class="modal-title">🧠 Supervisão de Casos</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+          <span style="font-size:10.5px;color:var(--text3);">🔐 De-identificado · AES-256</span>
+          <button class="btn-x" onclick="hideSupervisao()">×</button>
+        </div>
+      </div>
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div id="sup-content" style="flex:1;overflow-y:auto;padding:16px 20px 20px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT AREA (hidden, only visible on print) -->
+<div id="print-area" style="display:none;"></div>
+
+</div><!-- /app-shell -->
+
+<script>
+/* ═══════════ API KEY ═══════════ */
+const API_KEY_STORAGE = 'guarapsi_api_key';
+
+function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
+
+function saveApiKey(){
+  const val = document.getElementById('api-key-inp').value.trim();
+  if(!val){ alert('Cole sua chave de API no campo.'); return; }
+  localStorage.setItem(API_KEY_STORAGE, val);
+  updateApiStatus();
+  document.getElementById('api-banner').classList.add('hidden');
+  document.getElementById('api-key-inp').value='';
+}
+
+function dismissBanner(){ document.getElementById('api-banner').classList.add('hidden'); }
+
+function toggleApiBanner(){
+  const b=document.getElementById('api-banner');
+  b.classList.toggle('hidden');
+}
+
+function updateApiStatus(){
+  const key=getApiKey();
+  const el=document.getElementById('sb-api-status');
+  if(key){ el.textContent='✓ ativa'; el.style.color='#a0ffb0'; }
+  else   { el.textContent='⚠ sem chave'; el.style.color='#ffdd80'; }
+}
+
+/* Wrapper for all AI calls — adds key + better error handling */
+async function callClaude(payload){
+  const key=getApiKey();
+  if(!key){
+    document.getElementById('api-banner').classList.remove('hidden');
+    throw new Error('Chave de API não configurada. Insira sua chave no campo acima.');
+  }
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/* ═══════════ CONFIG ═══════════ */
+const UBS_LIST = [
+  'UBS SÃO PEDRO DE ALCÂNTARA','UBS RIO BRANCO','UBS BANANAL DO SUL',
+  'UBS ILHA DA FIGUEIRA','UBS VILA AMIZADE','UBS IMIGRANTES',"UBS CAIXA D'ÁGUA"
+];
+const UBS_COLORS = ['#6b8f71','#7a7fa0','#a07850','#6a9aab','#9a7090','#8f8560','#b06060'];
+const UBS_BGS    = ['#eaf1eb','#eeeef5','#f4ede3','#e6f2f5','#f2ebf0','#f2f0e4','#f5ebeb'];
+const UBS_MIDS   = ['#c4d9c7','#c8c9df','#ddc9b0','#b8d8e2','#d8c0d2','#d5d0b0','#deb8b8'];
+const uI = u => UBS_LIST.indexOf(u);
+const uC = u => { const i=uI(u); return i>=0?UBS_COLORS[i]:'#888'; };
+const uB = u => { const i=uI(u); return i>=0?UBS_BGS[i]:'#f0f0f0'; };
+const uM = u => { const i=uI(u); return i>=0?UBS_MIDS[i]:'#ccc'; };
+
+/* ═══════════ FIREBASE — configuração real ═══════════ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyC5-9fg-23H2LQgLQtlNOCtrckf7_H6tHY",
+  authDomain:        "guarapsi-52d2e.firebaseapp.com",
+  projectId:         "guarapsi-52d2e",
+  storageBucket:     "guarapsi-52d2e.firebasestorage.app",
+  messagingSenderId: "469632703473",
+  appId:             "1:469632703473:web:55ba0764e0da3798114250"
+};
+
+// força uso do domínio Firebase para autenticação OAuth
+// evita bloqueio de domínio customizado
+const AUTH_DOMAIN_OVERRIDE = 'guarapsi-52d2e.firebaseapp.com';
+
+/* ═══════════ DATA LAYER ═══════════ */
+const DB_KEY = 'guarapsi_v2';
+let db = (() => { try{ return JSON.parse(localStorage.getItem(DB_KEY))||{patients:[]}; }catch{ return {patients:[]}; } })();
+let firestoreDB = null;
+let useCloud    = false;
+let currentUser = null;
+
+function saveLocalDB(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+let cloudSaveT = null;
+async function saveDB(){
+  saveLocalDB();
+  if(!useCloud || !firestoreDB || !currentUser) return;
+  clearTimeout(cloudSaveT);
+  cloudSaveT = setTimeout(async () => {
+    try {
+      await firestoreDB.collection('usuarios').doc(currentUser.uid).set(db);
+      const el = document.getElementById('sb-save');
+      if(el) el.textContent = '☁ salvo ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    } catch(e){ console.warn('Cloud save failed:', e); }
+  }, 800);
+}
+
+async function loadCloudDB(){
+  if(!firestoreDB || !currentUser) return;
+  try {
+    const snap = await firestoreDB.collection('usuarios').doc(currentUser.uid).get();
+    if(snap.exists && snap.data().patients && snap.data().patients.length > 0){
+      db = snap.data();
+      saveLocalDB();
+    } else {
+      const oldSnap = await firestoreDB.collection('guarapsi').doc('data').get();
+      if(oldSnap.exists && oldSnap.data().patients && oldSnap.data().patients.length > 0){
+        db = oldSnap.data();
+        saveLocalDB();
+        await firestoreDB.collection('usuarios').doc(currentUser.uid).set(db);
+      }
+    }
+  } catch(e){ console.warn('Cloud load failed:', e); }
+}
+
+async function initFirebase(){
+  try {
+    if(!firebase.apps.length){
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    firestoreDB = firebase.firestore();
+    const auth  = firebase.auth();
+    window.fbAuth = { auth, signOut: () => auth.signOut() };
+    useCloud = true;
+
+    auth.onAuthStateChanged(async user => {
+      if(user){
+        currentUser = user;
+        showApp();
+        const sbUser = document.getElementById('sb-user');
+        if(sbUser) sbUser.textContent = user.email;
+        const sbSave = document.getElementById('sb-save');
+        if(sbSave) sbSave.textContent = '☁ carregando…';
+        // show sidebar immediately with local data
+        renderSidebar();
+        // then load cloud and re-render
+        await loadCloudDB();
+        renderSidebar();
+        if(sbSave) sbSave.textContent = '☁ nuvem ativa';
+      } else {
+        currentUser = null;
+        showLogin();
+      }
+    });
+
+  } catch(e){
+    console.warn('Firebase init failed:', e);
+    showApp();
+    renderSidebar();
+  }
+}
+
+function showLogin(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app-shell').style.display='none';
+}
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-shell').style.display='flex';
+}
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
+  if(!email||!pass){ err.textContent='Preencha e-mail e senha.'; return; }
+  btn.textContent='Entrando…'; btn.disabled=true; err.textContent='';
+  try {
+    await window.fbAuth.auth.signInWithEmailAndPassword(email, pass);
+  } catch(e){
+    err.textContent = e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'
+      ? 'E-mail ou senha incorretos.'
+      : e.code==='auth/too-many-requests'
+      ? 'Muitas tentativas. Aguarde um momento.'
+      : 'Erro: ' + e.message;
+    btn.textContent='Entrar'; btn.disabled=false;
+  }
+}
+
+async function doLogout(){
+  if(!window.fbAuth) return;
+  await window.fbAuth.signOut();
+}
+
+
+let CUR_PAT=null, CUR_SESS=null;
+let ubsOpen={}, autoT=null;
+let lastImproved='';
+
+const today = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => { if(!d)return'—'; const[y,m,day]=d.split('-'); return`${day}/${m}/${y}`; };
+
+/* ═══════════ INIT ═══════════ */
+function init(){
+  ['np-ubs','ep-ubs'].forEach(id => {
+    const s=document.getElementById(id);
+    s.innerHTML='<option value="">— Selecione —</option>';
+    UBS_LIST.forEach(u=>{ s.innerHTML+=`<option>${u}</option>`; });
+  });
+  // load ubsOpen from localStorage so state persists
+  const savedOpen = (() => { try{ return JSON.parse(localStorage.getItem('guarapsi_ubsopen'))||{}; }catch{ return {}; } })();
+  UBS_LIST.forEach(u=>{ ubsOpen[u] = savedOpen[u] !== false; }); // default open
+  initFirebase(); // handles showLogin / showApp
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#dots-btn') && !e.target.closest('#dots-menu'))
+      document.getElementById('dots-menu').classList.remove('open');
+  });
+}
+
+/* ═══════════ SIDEBAR ═══════════ */
+function renderSidebar(filter=''){
+  const tree=document.getElementById('tree');
+  if(!tree) return;
+  tree.innerHTML='';
+  UBS_LIST.forEach((ubs, ci) => {
+    const col=UBS_COLORS[ci], bg=UBS_BGS[ci], mid=UBS_MIDS[ci];
+    const pats=db.patients.filter(p => p.ubs===ubs &&
+      (!filter || p.name.toLowerCase().includes(filter.toLowerCase()) || (p.matricula||'').includes(filter)));
+    const open=ubsOpen[ubs];
+    const grp=document.createElement('div'); grp.className='ubs-block';
+
+    const btn=document.createElement('button');
+    btn.className='ubs-btn';
+    if(open) btn.style.background=`${col}18`; // very subtle dark tint of UBS color
+    btn.innerHTML=`
+      <span class="ubs-dot" style="background:${col};"></span>
+      <span class="ubs-arrow${open?' r':''}">▶</span>
+      <span class="ubs-label" style="color:${open?col:'var(--text2)'};">${ubs.replace('UBS ','')}</span>
+      <span class="ubs-badge" style="background:${col}22;color:${col};">${pats.length}</span>
+    `;
+    btn.onclick = () => {
+      ubsOpen[ubs]=!ubsOpen[ubs];
+      localStorage.setItem('guarapsi_ubsopen', JSON.stringify(ubsOpen));
+      renderSidebar(document.getElementById('search').value);
+    };
+
+    const list=document.createElement('div');
+    list.className='pat-list'+(open?' open':'');
+    if(pats.length===0){
+      list.innerHTML='<div class="no-pat">Sem pacientes</div>';
+    } else {
+      pats.forEach(p => {
+        const row=document.createElement('div');
+        row.className='pat-row'+(p.id===CUR_PAT?' active':'');
+        if(p.id===CUR_PAT){ row.style.background=`${uC(p.ubs)}20`; row.style.borderLeftColor=uC(p.ubs); }
+        row.innerHTML=`<span class="pat-name" style="${p.id===CUR_PAT?`color:${uC(p.ubs)};font-weight:500;`:''}">${p.name}</span><span class="pat-nsess">${p.sessions.length}</span>`;
+        row.onclick = () => selectPatient(p.id);
+        list.appendChild(row);
+      });
+    }
+    grp.appendChild(btn); grp.appendChild(list);
+    tree.appendChild(grp);
+  });
+}
+
+/* ═══════════ SELECT / DRAWER ═══════════ */
+function selectPatient(id){
+  CUR_PAT=id; CUR_SESS=null;
+  const p=db.patients.find(x=>x.id===id); if(!p) return;
+  openDrawer(p);
+  renderSidebar(document.getElementById('search').value);
+}
+
+function openDrawer(p){
+  const col=uC(p.ubs);
+  document.getElementById('dh-dot').style.background=col;
+  document.getElementById('drawer-color-bar').style.background=col;
+  document.getElementById('dh-name').textContent=p.name;
+  document.getElementById('dh-mat').textContent=p.matricula?`Mat: ${p.matricula}`:'';
+  document.getElementById('dh-ubs').textContent=p.ubs;
+  document.getElementById('new-sess-btn').style.background=col;
+  document.getElementById('slide-panel').classList.add('open');
+  document.getElementById('sb-ubs').textContent=p.ubs.replace('UBS ','');
+  document.getElementById('sb-pac').textContent=p.name;
+  document.getElementById('sb-sess').textContent=p.sessions.length;
+  document.getElementById('ai-ctx-name').textContent=`${p.name} | ${p.ubs}`;
+  renderSessList();
+  showPlaceholder();
+}
+
+function closeDrawer(){
+  document.getElementById('slide-panel').classList.remove('open');
+  CUR_SESS=null; closeImprove();
+}
+
+/* ═══════════ SESSIONS LIST ═══════════ */
+function renderSessList(){
+  const p=db.patients.find(x=>x.id===CUR_PAT);
+  const list=document.getElementById('sess-list');
+  list.innerHTML='';
+  if(!p||p.sessions.length===0){ list.innerHTML='<div class="sess-empty">Nenhuma sessão.<br>Clique em + para criar.</div>'; return; }
+  const col=uC(p.ubs);
+  p.sessions.slice().reverse().forEach((s,ri)=>{
+    const idx=p.sessions.length-1-ri;
+    const item=document.createElement('div');
+    item.className='sess-item'+(idx===CUR_SESS?' active':'');
+    if(idx===CUR_SESS){ item.style.background=`${col}20`; item.style.borderLeftColor=col; }
+    item.innerHTML=`<div class="sess-num">Sessão ${s.num||idx+1}</div><div class="sess-date" style="${idx===CUR_SESS?`color:${col};`:''}">${fmtDate(s.date)}</div><div class="sess-preview">${s.title||(s.body||'').slice(0,45)||'(sem conteúdo)'}</div>`;
+    item.onclick=()=>loadSession(idx);
+    list.appendChild(item);
+  });
+  document.getElementById('sb-sess').textContent=p.sessions.length;
+}
+
+/* ═══════════ LOAD SESSION ═══════════ */
+function loadSession(idx){
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  const s=p.sessions[idx]; if(!s) return;
+  CUR_SESS=idx;
+
+  const get = id => document.getElementById(id);
+  if(get('editor-placeholder')) get('editor-placeholder').style.display='none';
+  if(get('doc-paper'))          get('doc-paper').style.display='block';
+  if(get('f-date'))   get('f-date').value  = s.date||today();
+  if(get('f-mat'))    get('f-mat').value   = p.matricula||'';
+  if(get('f-num'))    get('f-num').value   = s.num||(idx+1);
+  if(get('f-pac'))    get('f-pac').value   = p.name;
+  if(get('f-ubs'))    get('f-ubs').value   = p.ubs;
+  if(get('f-title'))  get('f-title').value = s.title||'';
+  if(get('f-body'))   get('f-body').value  = s.body||'';
+
+  // color labels now that paper is in DOM
+  const col=uC(p.ubs);
+  document.querySelectorAll('.field-lbl').forEach(el=>{ if(el) el.style.color=col; });
+
+  closeImprove();
+  renderSessList();
+  setupAutoSave();
+  if(get('editor-col')) get('editor-col').scrollTop=0;
+}
+
+function showPlaceholder(){
+  document.getElementById('editor-placeholder').style.display='flex';
+  document.getElementById('doc-paper').style.display='none';
+  CUR_SESS=null; closeImprove();
+}
+
+/* ═══════════ NEW / SAVE / DELETE SESSION ═══════════ */
+function newSession(){
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  const s={id:Date.now().toString(),date:today(),num:p.sessions.length+1,title:'',body:''};
+  p.sessions.push(s); saveDB();
+  loadSession(p.sessions.length-1);
+  renderSessList(); renderSidebar(document.getElementById('search').value);
+}
+
+function saveSession(){
+  if(CUR_PAT===null||CUR_SESS===null) return;
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  const s=p.sessions[CUR_SESS];
+  s.date=document.getElementById('f-date').value;
+  s.num=document.getElementById('f-num').value;
+  s.title=document.getElementById('f-title').value;
+  s.body=document.getElementById('f-body').value;
+  saveDB(); renderSessList(); renderSidebar(document.getElementById('search').value);
+  flash('save-msg','✓ Salvo');
+  document.getElementById('sb-save').textContent='salvo '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function setupAutoSave(){
+  ['f-date','f-num','f-title','f-body'].forEach(id=>{
+    document.getElementById(id).oninput=()=>{ clearTimeout(autoT); autoT=setTimeout(saveSession,1400); };
+  });
+}
+
+function flash(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2200); }
+
+function confirmDeleteSession(){
+  confirm2('Excluir sessão','Excluir esta sessão permanentemente?',()=>{
+    const p=db.patients.find(x=>x.id===CUR_PAT);
+    p.sessions.splice(CUR_SESS,1);
+    p.sessions.forEach((s,i)=>s.num=i+1);
+    saveDB(); CUR_SESS=null; showPlaceholder(); renderSessList();
+    renderSidebar(document.getElementById('search').value);
+  });
+}
+
+/* ═══════════ TEXT IMPROVEMENT IA ═══════════ */
+const IMPROVE_MODES = {
+  clareza: {
+    label:'Melhoria de clareza',
+    sub:'Texto reescrito com maior clareza e coesão',
+    prompt:`Você é um revisor especializado em escrita clínica psicológica. 
+Reescreva o texto abaixo melhorando a clareza, coesão e fluidez, sem alterar o conteúdo clínico.
+Corrija erros gramaticais. Mantenha o estilo pessoal do psicólogo. Retorne APENAS o texto melhorado, sem comentários ou explicações.`
+  },
+  formal: {
+    label:'Formalização técnica',
+    sub:'Texto adequado à linguagem técnica do CFP',
+    prompt:`Você é um psicólogo com expertise em documentação clínica seguindo normas do CFP.
+Reescreva o texto abaixo em linguagem técnica formal adequada para prontuário psicológico.
+Use terminologia clínica apropriada. Retorne APENAS o texto reescrito, sem comentários.`
+  },
+  expandir: {
+    label:'Texto expandido',
+    sub:'Relato detalhado com observações clínicas adicionadas',
+    prompt:`Você é um psicólogo clínico experiente em Psicoterapia Breve.
+Expanda o relato abaixo adicionando detalhes clínicos pertinentes: observações comportamentais, afetivas, cognitivas e relacionais sugeridas pelo contexto.
+Sinalize claramente o que foi adicionado com [sugestão]. Retorne o texto expandido sem outros comentários.`
+  }
+};
+
+async function improveText(mode){
+  const body=document.getElementById('f-body').value.trim();
+  if(!body){ alert('Escreva o relato antes de melhorar o texto.'); return; }
+
+  const cfg=IMPROVE_MODES[mode];
+  const btns=['improve-btn','formal-btn','expand-btn'];
+  btns.forEach(b=>{ const el=document.getElementById(b); if(el){ el.classList.add('loading'); el.disabled=true; } });
+
+  const panel=document.getElementById('improve-panel');
+  panel.style.display='block';
+  document.getElementById('improve-title').textContent=cfg.label;
+  document.getElementById('improve-sub').textContent=cfg.sub;
+  document.getElementById('improve-content').innerHTML=`<div class="improve-loading"><div class="dots-anim"><span></span><span></span><span></span></div><span>Reescrevendo…</span></div>`;
+  // scroll down to show panel
+  setTimeout(()=>{ document.getElementById('editor-col').scrollTop=99999; },80);
+
+  try {
+    const data=await callClaude({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{ role:'user', content:`${cfg.prompt}\n\n---\n${body}` }]
+    });
+    lastImproved=(data.content||[]).map(i=>i.text||'').join('\n')||'Sem resposta.';
+    document.getElementById('improve-content').textContent=lastImproved;
+  } catch(err) {
+    document.getElementById('improve-content').textContent=`⚠️ ${err.message}`;
+    lastImproved='';
+  }
+  btns.forEach(b=>{ const el=document.getElementById(b); if(el){ el.classList.remove('loading'); el.disabled=false; } });
+}
+
+function acceptImprovement(){
+  if(!lastImproved) return;
+  document.getElementById('f-body').value=lastImproved;
+  saveSession(); closeImprove();
+}
+
+function closeImprove(){
+  const panel=document.getElementById('improve-panel');
+  if(panel) panel.style.display='none';
+  lastImproved='';
+}
+
+/* ═══════════ DOTS MENU ═══════════ */
+function toggleDots(e){
+  e.stopPropagation();
+  document.getElementById('dots-menu').classList.toggle('open');
+}
+function dotsAction(type){
+  document.getElementById('dots-menu').classList.remove('open');
+  if(type==='analyze') runAnalysis();
+  else if(type==='evolucao-ia') runEvolutionAnalysis();
+  else aiQuick(type);
+}
+
+/* ═══════════ SESSION ANALYSIS ═══════════ */
+async function runAnalysis(){
+  const body=document.getElementById('f-body')?.value?.trim();
+  if(!body){ alert('Escreva o relato da sessão antes de analisar.'); return; }
+  const p=db.patients.find(x=>x.id===CUR_PAT);
+  const sessCtx=p?p.sessions.map((s,i)=>`Sessão ${s.num||i+1} (${fmtDate(s.date)}): ${s.title||'—'}\n${s.body||''}`).join('\n---\n'):'';
+
+  // open AI panel and send analysis
+  document.getElementById('ai-panel').classList.add('open');
+  addMsg('sys','── Análise da sessão atual ──');
+  const typing=addTyping();
+  document.getElementById('ai-send').disabled=true;
+
+  const prompt=`Você é um psicólogo clínico especializado em Psicoterapia Breve (modelo focal, SUS).
+
+Analise o relato de sessão e forneça:
+1. **Foco terapêutico** — demanda principal ou conflito nuclear identificado
+2. **Observações clínicas** — padrões, defesas, recursos do paciente
+3. **Sugestão de intervenção** — técnica de psicoterapia breve para a próxima sessão
+4. **Atenção** — riscos ou pontos de encaminhamento (se houver)
+
+Seja objetivo. Máximo 280 palavras.
+
+Paciente: ${p?.name||'—'} | UBS: ${p?.ubs||'—'} | Matrícula: ${p?.matricula||'—'}
+${p?.obs?`Demanda inicial: ${p.obs}\n`:''}
+Relato da sessão:
+${body}
+${p?.sessions.length>1?`\nHistórico:\n${sessCtx}`:''}`;
+
+  try {
+    const data=await callClaude({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]});
+    typing.remove();
+    addMsg('bot',(data.content||[]).map(i=>i.text||'').join('\n')||'Sem resposta.');
+  } catch(err){ typing.remove(); addMsg('bot',`⚠️ ${err.message}`); }
+  document.getElementById('ai-send').disabled=false;
+}
+
+/* ═══════════ AI PANEL ═══════════ */
+function toggleAI(){ document.getElementById('ai-panel').classList.toggle('open'); }
+function aiKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendAI(); } }
+
+const AI_PROMPTS={
+  laudo:'Com base nos registros deste paciente, elabore um laudo psicológico estruturado seguindo as normas do CFP, com: identificação, demanda, histórico, avaliação e conclusão.',
+  encaminhamento:'Redija um documento de encaminhamento psicológico formal para este paciente, indicando a necessidade de atendimento especializado e justificando clinicamente.',
+  resumo:'Elabore um resumo clínico objetivo das sessões registradas, destacando evolução, pontos críticos e objetivos terapêuticos atuais.',
+  evolucao:'Descreva a evolução terapêutica deste paciente com base nas sessões, identificando avanços, dificuldades e ajustes indicados.',
+  alta:'Redija um relatório de alta psicológica, justificando os critérios de encerramento e as orientações pós-atendimento.'
+};
+
+function aiQuick(type){
+  document.getElementById('ai-inp').value=AI_PROMPTS[type]||'';
+  document.getElementById('ai-panel').classList.add('open');
+  sendAI();
+}
+
+async function sendAI(){
+  const inp=document.getElementById('ai-inp');
+  const msg=inp.value.trim(); if(!msg) return;
+  inp.value=''; addMsg('user',msg);
+  const p=db.patients.find(x=>x.id===CUR_PAT);
+  const sessCtx=p?p.sessions.map((s,i)=>`Sessão ${s.num||i+1} – ${fmtDate(s.date)}\nTítulo: ${s.title||'—'}\n${s.body||'(sem conteúdo)'}`).join('\n---\n'):'';
+  const system=`Você é um assistente especializado em psicologia clínica, apoiando um psicólogo da rede pública brasileira (SUS). Auxilie na redação de documentos psicológicos formais conforme normas do CFP. Use linguagem técnica e profissional.${p?`\n\nPaciente: ${p.name} | Mat: ${p.matricula||'—'} | Nasc: ${fmtDate(p.dob)} | UBS: ${p.ubs}\nDemanda: ${p.obs||'—'}\n\nSessões:\n${sessCtx||'Nenhuma.'}` : ''}`;
+  const typing=addTyping();
+  document.getElementById('ai-send').disabled=true;
+  try {
+    const data=await callClaude({model:'claude-sonnet-4-20250514',max_tokens:1000,system,messages:[{role:'user',content:msg}]});
+    typing.remove();
+    addMsg('bot',(data.content||[]).map(i=>i.text||'').join('\n')||'Sem resposta.');
+  } catch(err){ typing.remove(); addMsg('bot',`⚠️ ${err.message}`); }
+  document.getElementById('ai-send').disabled=false;
+}
+
+function addMsg(role,text){
+  const box=document.getElementById('ai-msgs');
+  const el=document.createElement('div');
+  el.className=`ai-msg ${role}`; el.textContent=text;
+  box.appendChild(el); box.scrollTop=box.scrollHeight; return el;
+}
+function addTyping(){
+  const box=document.getElementById('ai-msgs');
+  const el=document.createElement('div');
+  el.className='ai-typing'; el.innerHTML='<span></span><span></span><span></span>';
+  box.appendChild(el); box.scrollTop=box.scrollHeight; return el;
+}
+
+/* ═══════════ PATIENTS ═══════════ */
+function createPatient(){
+  const name=document.getElementById('np-name').value.trim();
+  const mat=document.getElementById('np-mat').value.trim();
+  const dob=document.getElementById('np-dob').value;
+  const ubs=document.getElementById('np-ubs').value;
+  const obs=document.getElementById('np-obs').value.trim();
+  if(!name){alert('Nome é obrigatório.');return;}
+  if(!ubs){alert('Selecione a UBS.');return;}
+  const p={id:Date.now().toString(),name,matricula:mat,dob,ubs,obs,sessions:[]};
+  db.patients.push(p); saveDB();
+  hideModal('modal-patient');
+  ['np-name','np-mat','np-dob','np-ubs','np-obs'].forEach(id=>document.getElementById(id).value='');
+  renderSidebar(); selectPatient(p.id);
+}
+
+function openEditPatient(){
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  document.getElementById('ep-name').value=p.name;
+  document.getElementById('ep-mat').value=p.matricula||'';
+  document.getElementById('ep-dob').value=p.dob||'';
+  document.getElementById('ep-ubs').value=p.ubs;
+  document.getElementById('ep-obs').value=p.obs||'';
+  showModal('modal-edit');
+}
+
+function saveEditPatient(){
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  const name=document.getElementById('ep-name').value.trim();
+  const ubs=document.getElementById('ep-ubs').value;
+  if(!name){alert('Nome é obrigatório.');return;}
+  if(!ubs){alert('Selecione a UBS.');return;}
+  p.name=name; p.matricula=document.getElementById('ep-mat').value.trim();
+  p.dob=document.getElementById('ep-dob').value;
+  p.ubs=ubs; p.obs=document.getElementById('ep-obs').value.trim();
+  saveDB(); hideModal('modal-edit');
+  openDrawer(p); renderSidebar(document.getElementById('search').value);
+}
+
+function confirmDeletePatient(){
+  const p=db.patients.find(x=>x.id===CUR_PAT); if(!p) return;
+  confirm2(`Excluir ${p.name}`,`Excluir permanentemente o paciente e todas as suas sessões?`,()=>{
+    db.patients=db.patients.filter(x=>x.id!==CUR_PAT); saveDB();
+    CUR_PAT=null; CUR_SESS=null; closeDrawer();
+    document.getElementById('sb-ubs').textContent='—';
+    document.getElementById('sb-pac').textContent='—';
+    document.getElementById('sb-sess').textContent='—';
+    renderSidebar(document.getElementById('search').value);
+  });
+}
+
+/* ═══════════ MODALS ═══════════ */
+function showModal(id){ document.getElementById(id).style.display='block'; }
+function hideModal(id){ document.getElementById(id).style.display='none'; }
+function confirm2(title,msg,cb){
+  document.getElementById('conf-title').textContent=title;
+  document.getElementById('conf-msg').textContent=msg;
+  document.getElementById('conf-btn').onclick=()=>{ hideModal('modal-confirm'); cb(); };
+  showModal('modal-confirm');
+}
+
+/* ═══════════ KEYBOARD ═══════════ */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveSession(); }
+  if(e.key==='Escape'){ closeDrawer(); }
+});
+
+/* ═══════════ SUPERVISÃO ═══════════ */
+const SUP_SALT_KEY = 'guarapsi_sup_salt';
+const SUP_DATA_KEY = 'guarapsi_sup_data';
+const sup_enc = new TextEncoder(), sup_dec = new TextDecoder();
+const sup_b64  = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const sup_ub64 = s   => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+let supKey = null, supCases = [], supView = 'lock', supSelId = null, supSending = false, supChatErr = '';
+
+const SUP_PATTERNS = [
+  {tipo:'CPF',        sev:'hard', re:/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g},
+  {tipo:'Telefone',   sev:'hard', re:/\(?\b\d{2}\)?\s?9?\d{4}[-\s]?\d{4}\b/g},
+  {tipo:'E-mail',     sev:'hard', re:/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g},
+  {tipo:'Data',       sev:'hard', re:/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g},
+  {tipo:'Cartão SUS', sev:'hard', re:/\b\d{3}\s?\d{4}\s?\d{4}\s?\d{4}\b/g},
+  {tipo:'Nome próprio',sev:'soft',re:/\b[A-ZÀ-Ý][a-zà-ÿ]{2,}(?:\s+(?:d[aeo]s?|e)\s+|\s+)[A-ZÀ-Ý][a-zà-ÿ]{2,}/g}
+];
+
+function supScan(text){
+  if(!text) return [];
+  const out = [];
+  for(const p of SUP_PATTERNS){
+    const m = text.match(p.re);
+    if(m) for(const t of [...new Set(m)]) out.push({tipo:p.tipo, sev:p.sev, trecho:t});
+  }
+  return out;
+}
+
+async function supDeriveKey(pass, salt){
+  const base = await crypto.subtle.importKey('raw', sup_enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'},
+    base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
+  );
+}
+async function supEncrypt(obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, supKey, sup_enc.encode(JSON.stringify(obj)));
+  return JSON.stringify({iv:sup_b64(iv), ct:sup_b64(ct)});
+}
+async function supDecrypt(str){
+  const {iv, ct} = JSON.parse(str);
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:sup_ub64(iv)}, supKey, sup_ub64(ct));
+  return JSON.parse(sup_dec.decode(pt));
+}
+async function supPersist(){ localStorage.setItem(SUP_DATA_KEY, await supEncrypt(supCases)); }
+
+function showSupervisao(){ supRender(); showModal('modal-supervisao'); }
+function hideSupervisao(){ hideModal('modal-supervisao'); }
+
+function supRender(){
+  if(supView==='lock')   supRenderLock();
+  else if(supView==='list')   supRenderList();
+  else if(supView==='new')    supRenderNew();
+  else if(supView==='detail') supRenderDetail();
+}
+
+function supRenderLock(){
+  const first = !localStorage.getItem(SUP_SALT_KEY);
+  document.getElementById('sup-content').innerHTML = `
+    <div class="sup-lock">
+      <div class="sup-lock-title">🔒 Cofre de Supervisão</div>
+      <div class="sup-lock-sub">${first ? 'Crie uma senha para proteger os casos de supervisão.' : 'Digite sua senha para acessar os casos.'}</div>
+      ${first ? `
+        <div class="fld"><label>Senha (mín. 6 caracteres)</label><input type="password" id="sup-pass" placeholder="••••••••"></div>
+        <div class="fld"><label>Confirmar senha</label><input type="password" id="sup-pass2" placeholder="••••••••"></div>
+      ` : `
+        <div class="fld"><label>Senha</label><input type="password" id="sup-pass" placeholder="••••••••"></div>
+      `}
+      <div style="color:#c46060;font-size:11.5px;min-height:16px;margin-bottom:8px;" id="sup-lock-err"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="${first?'supCreateVault()':'supUnlock()'}">
+        ${first ? 'Criar cofre e entrar' : 'Desbloquear'}
+      </button>
+      <div class="sup-lock-pill">🛡️ Criptografia AES-256 local. Os dados não saem do dispositivo.</div>
+    </div>`;
+  const inp = document.getElementById('sup-pass');
+  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') first ? supCreateVault() : supUnlock(); });
+  setTimeout(()=>{ if(inp) inp.focus(); }, 50);
+}
+
+async function supCreateVault(){
+  const p = document.getElementById('sup-pass').value;
+  const p2 = document.getElementById('sup-pass2').value;
+  const errEl = document.getElementById('sup-lock-err');
+  if(p.length < 6){ errEl.textContent = 'Use ao menos 6 caracteres.'; return; }
+  if(p !== p2){ errEl.textContent = 'As senhas não coincidem.'; return; }
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  localStorage.setItem(SUP_SALT_KEY, sup_b64(salt));
+  supKey = await supDeriveKey(p, salt);
+  supCases = []; await supPersist();
+  supView = 'list'; supRender();
+}
+
+async function supUnlock(){
+  const p = document.getElementById('sup-pass').value;
+  const errEl = document.getElementById('sup-lock-err');
+  const salt = sup_ub64(localStorage.getItem(SUP_SALT_KEY));
+  supKey = await supDeriveKey(p, salt);
+  try {
+    const raw = localStorage.getItem(SUP_DATA_KEY);
+    supCases = raw ? await supDecrypt(raw) : [];
+    supView = 'list'; supRender();
+  } catch(e) {
+    supKey = null; errEl.textContent = 'Senha incorreta.';
+  }
+}
+
+function supRenderList(){
+  const banner = `<div class="sup-banner">🔐 Espaço <b>de-identificado</b> e criptografado, separado do prontuário.<br>Não insira nome completo, CPF, data de nascimento completa, endereço ou telefone.</div>`;
+  const items = supCases.length
+    ? supCases.map(c => `
+      <button class="sup-case-item" onclick="supOpen('${c.id}')">
+        <div class="sup-case-title">${supEsc(c.codigo)}</div>
+        <div class="sup-case-meta">${supEsc([c.faixa,c.genero,c.contexto].filter(Boolean).join(' · '))}</div>
+        <div class="sup-case-preview">${supEsc((c.resumo||'').slice(0,100))}${(c.resumo||'').length>100?'…':''}</div>
+        <div class="sup-case-meta" style="margin-top:4px;">${c.chat.length} mensagens</div>
+      </button>`).join('')
+    : `<div style="text-align:center;color:var(--text4);font-style:italic;padding:32px;">Nenhum caso ainda. Crie o primeiro.</div>`;
+
+  document.getElementById('sup-content').innerHTML = `
+    ${banner}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Casos salvos</span>
+      <button class="btn btn-primary btn-sm" onclick="supGoNew()">+ Novo caso</button>
+    </div>
+    ${items}`;
+}
+
+const supEsc = s => (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function supGoNew(){ supView = 'new'; supRender(); }
+function supOpen(id){ supSelId = id; supView = 'detail'; supChatErr = ''; supRender(); }
+function supBack(){ supView = 'list'; supRender(); }
+const supSelected = () => supCases.find(c => c.id === supSelId);
+
+let supFormFindings = [];
+function supRenderNew(){
+  const f = supFormFindings;
+  const fHtml = f.length ? `<div class="sup-findings">⚠️ Possíveis dados identificáveis:<br>${
+    f.map(i=>`<div class="sup-findings-${i.sev}">• <b>${i.tipo}</b>: <code style="background:var(--bg3);padding:1px 4px;border-radius:3px;">${supEsc(i.trecho)}</code> ${i.sev==='hard'?'— remova antes de salvar':'— confirme que não identifica'}</div>`).join('')
+  }</div>` : '';
+
+  document.getElementById('sup-content').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="supBack()" style="margin-bottom:10px;">‹ Voltar</button>
+    <div style="font-family:'Lora',serif;font-size:16px;color:var(--text);margin-bottom:14px;">Novo caso de-identificado</div>
+    <div class="sup-field"><label>Código / apelido *</label><input id="sup-codigo" placeholder="ex.: Caso 014 — adolescente, luto"></div>
+    <div class="sup-field-row">
+      <div class="sup-field"><label>Faixa etária</label><input id="sup-faixa" placeholder="ex.: 30–40 anos"></div>
+      <div class="sup-field"><label>Gênero (opcional)</label><input id="sup-genero" placeholder="ex.: feminino"></div>
+    </div>
+    <div class="sup-field"><label>Contexto / abordagem</label><input id="sup-contexto" placeholder="ex.: APS, psicoterapia breve, 3ª sessão"></div>
+    <div class="sup-field"><label>Resumo do caso</label><textarea id="sup-resumo" rows="4" placeholder="Quadro, demanda, evolução — sem dados identificáveis."></textarea></div>
+    <div class="sup-field"><label>Hipóteses iniciais (opcional)</label><textarea id="sup-hipoteses" rows="2" placeholder="Hipóteses diagnósticas ou compreensivas…"></textarea></div>
+    ${fHtml}
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="supBack()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="supTrySave()">Salvar caso</button>
+    </div>`;
+}
+
+async function supTrySave(){
+  const g = id => (document.getElementById(id)||{}).value || '';
+  const obj = { codigo:g('sup-codigo'), faixa:g('sup-faixa'), genero:g('sup-genero'),
+    contexto:g('sup-contexto'), resumo:g('sup-resumo'), hipoteses:g('sup-hipoteses') };
+  const found = supScan([obj.codigo,obj.contexto,obj.resumo,obj.hipoteses].join(' '));
+  supFormFindings = found;
+  if(found.some(x=>x.sev==='hard')){ supRenderNew(); return; }
+  if(found.some(x=>x.sev==='soft') && !window.__supSoftOk){ window.__supSoftOk=true; supRenderNew(); return; }
+  window.__supSoftOk = false;
+  if(!obj.codigo){ alert('Código é obrigatório.'); return; }
+  supCases.unshift({ id: Date.now().toString(36), ...obj, chat:[], criadoEm: new Date().toISOString() });
+  await supPersist();
+  supSelId = supCases[0].id; supView = 'detail'; supFormFindings = []; supRender();
+}
+
+function supRenderDetail(){
+  const c = supSelected();
+  const apiKey = getApiKey();
+  const msgs = c.chat.length
+    ? c.chat.map(m=>`<div class="sup-msg ${m.role==='user'?'user':'assistant'}">${supEsc(m.content)}</div>`).join('')
+    : `<div class="sup-msg sys">Comece a discussão. A IA recebe só o resumo de-identificado e o que você escrever.</div>`;
+
+  document.getElementById('sup-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="supBack()">‹ Casos</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="supExport()">⬇ Exportar</button>
+        <button class="btn btn-danger btn-sm" onclick="supDelete()">✕ Excluir</button>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:12px;">
+      <div style="font-size:13.5px;font-weight:600;color:var(--text);">${supEsc(c.codigo)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">${supEsc([c.faixa,c.genero,c.contexto].filter(Boolean).join(' · '))}</div>
+      ${c.resumo?`<div style="font-size:12.5px;color:var(--text2);margin-top:7px;">${supEsc(c.resumo)}</div>`:''}
+      ${c.hipoteses?`<div style="font-size:12px;color:var(--text3);margin-top:5px;"><b>Hipóteses:</b> ${supEsc(c.hipoteses)}</div>`:''}
+    </div>
+    <div class="sup-chat" id="sup-chat">${msgs}${supSending?'<div class="sup-msg sys">Pensando…</div>':''}</div>
+    ${supChatErr?`<div style="color:#c46060;font-size:11.5px;margin-bottom:6px;">${supEsc(supChatErr)}</div>`:''}
+    <div class="sup-inp-row">
+      <textarea class="sup-inp" id="sup-input" rows="2" placeholder="Pergunte, levante hipóteses, peça leitura clínica… (requer chave de API)" ${supSending?'disabled':''}></textarea>
+      <button class="btn btn-primary btn-sm" onclick="supSend()" ${supSending?'disabled':''} style="height:38px;padding:0 14px;">Enviar</button>
+    </div>
+    <div style="font-size:10.5px;color:var(--text4);margin-top:6px;">🛡️ Cada mensagem é escaneada — identificadores fortes bloqueiam o envio.</div>`;
+
+  const chat = document.getElementById('sup-chat');
+  if(chat) chat.scrollTop = chat.scrollHeight;
+  const inp = document.getElementById('sup-input');
+  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault(); supSend();}});
+}
+
+async function supSend(){
+  supChatErr = '';
+  const c = supSelected();
+  const text = (document.getElementById('sup-input')||{}).value?.trim();
+  if(!text) return;
+
+  const found = supScan(text);
+  if(found.some(x=>x.sev==='hard')){
+    supChatErr = 'Mensagem contém dado identificável (' + found.filter(x=>x.sev==='hard').map(x=>x.tipo).join(', ') + '). Remova antes de enviar.';
+    supRenderDetail(); return;
+  }
+
+  supSending = true;
+  c.chat.push({role:'user', content:text});
+  await supPersist(); supRenderDetail();
+
+  const system = `Você é um apoio de supervisão clínica para um psicólogo do SUS (APS/eMulti), com base em Psicoterapia Breve (modelo focal), com elementos de ACT e perspectiva trauma-informed.
+Regras: recebe SOMENTE material de-identificado; não emite diagnóstico definitivo nem prescrição; trabalha com hipóteses compreensivas; dá atenção a risco e lembra articulação com equipe/CAPS quando pertinente; faz perguntas reflexivas de supervisão; responde em PT-BR, conciso e prático.
+
+--- Caso (de-identificado) ---
+Código: ${c.codigo}
+Faixa etária: ${c.faixa||'—'}
+Gênero: ${c.genero||'—'}
+Contexto: ${c.contexto||'—'}
+Resumo: ${c.resumo||'—'}
+Hipóteses: ${c.hipoteses||'—'}`;
+
+  try {
+    const data = await callClaude({
+      model:'claude-sonnet-4-20250514', max_tokens:1000, system,
+      messages: c.chat.map(m=>({role:m.role, content:m.content}))
+    });
+    const reply = (data.content||[]).map(b=>b.type==='text'?b.text:'').join('\n') || '(sem resposta)';
+    c.chat.push({role:'assistant', content:reply});
+  } catch(e){ supChatErr = 'Erro: ' + e.message; }
+
+  supSending = false;
+  await supPersist(); supRenderDetail();
+}
+
+function supExport(){
+  const c = supSelected();
+  const blob = new Blob([JSON.stringify(c,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = c.codigo.replace(/\s+/g,'_') + '.json';
+  a.click();
+}
+
+async function supDelete(){
+  if(!confirm('Excluir este caso? Não há como desfazer.')) return;
+  supCases = supCases.filter(x=>x.id!==supSelId);
+  await supPersist(); supBack();
+}
+
+/* ═══════════ AGENDA ═══════════ */
+// Semana A e B quinzenal
+// weekType: 0 = semana A, 1 = semana B
+// Referência: semana A começa em uma segunda conhecida
+const WEEK_A_REF = new Date('2026-06-15'); // segunda-feira de uma Semana A confirmada
+
+const SCHEDULE = {
+  A: {
+    1: 'UBS AME',
+    2: 'UBS SÃO PEDRO DE ALCÂNTARA',
+    3: 'UBS RIO BRANCO',
+    4: 'UBS BANANAL DO SUL',
+    5: 'UBS ILHA DA FIGUEIRA'
+  },
+  B: {
+    1: 'UBS AME',
+    2: "UBS CAIXA D'ÁGUA",
+    3: 'UBS VILA AMIZADE',
+    4: 'UBS BANANAL DO SUL',
+    5: 'UBS IMIGRANTES'
+  }
+};
+
+const DAY_NAMES = ['','Segunda','Terça','Quarta','Quinta','Sexta'];
+
+function getWeekType(date){
+  const monday = getMonday(date);
+  const diffWeeks = Math.round((monday - WEEK_A_REF) / (7 * 24 * 60 * 60 * 1000));
+  return diffWeeks % 2 === 0 ? 'A' : 'B';
+}
+
+function getMonday(date){
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getWeekDates(monday){
+  return [1,2,3,4,5].map(i => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i - 1);
+    return d;
+  });
+}
+
+let agendaCurrentMonday = getMonday(new Date());
+
+function showAgenda(){
+  renderAgenda();
+  showModal('modal-agenda');
+}
+
+function agendaNav(dir){
+  agendaCurrentMonday = new Date(agendaCurrentMonday);
+  agendaCurrentMonday.setDate(agendaCurrentMonday.getDate() + dir * 7);
+  renderAgenda();
+}
+
+function renderAgenda(){
+  const monday = agendaCurrentMonday;
+  const weekType = getWeekType(monday);
+  const dates = getWeekDates(monday);
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const fmt = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const weekStart = fmt(dates[0]);
+  const weekEnd   = fmt(dates[4]);
+
+  // ensure agenda structure in db
+  if(!db.agenda) db.agenda = {};
+
+  // calculate weekly pending count
+  let totalScheduled = 0, totalPending = 0;
+  [1,2,3,4,5].forEach((dayNum, i) => {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const dk = d.toISOString().slice(0,10);
+    const ids = db.agenda[dk] || [];
+    ids.forEach(id => {
+      const pat = db.patients.find(p => p.id === id);
+      if(!pat) return;
+      totalScheduled++;
+      if(!pat.sessions.some(s => s.date === dk)) totalPending++;
+    });
+  });
+
+  const summaryHtml = totalScheduled === 0
+    ? `<div style="font-size:11.5px;color:var(--text4);text-align:center;margin-bottom:12px;font-style:italic;">Nenhum atendimento agendado nesta semana</div>`
+    : totalPending === 0
+    ? `<div style="font-size:12px;color:#7ab880;text-align:center;margin-bottom:12px;">✓ Todos os ${totalScheduled} atendimentos desta semana foram evoluídos</div>`
+    : `<div style="font-size:12px;color:#c98a2e;text-align:center;margin-bottom:12px;">○ ${totalPending} de ${totalScheduled} atendimentos ainda sem sessão registrada</div>`;
+
+  let html = `
+    <div class="agenda-nav">
+      <button class="btn btn-ghost btn-sm" onclick="agendaNav(-1)">← Semana anterior</button>
+      <div style="text-align:center;">
+        <span class="agenda-week-label">${weekStart} – ${weekEnd}</span>
+        <span class="agenda-week-type">Semana ${weekType}</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="agendaNav(1)">Próxima semana →</button>
+    </div>
+    ${summaryHtml}
+  `;
+
+  dates.forEach((date, i) => {
+    const dayNum = i + 1; // 1=seg ... 5=sex
+    const ubs = SCHEDULE[weekType][dayNum];
+    const ci = uI(ubs); // index in UBS_LIST — avoids apostrophe issues in onclick
+    const dateKey = date.toISOString().slice(0,10);
+    const isToday = date.getTime() === today.getTime();
+    const col = uC(ubs);
+
+    // get scheduled patients for this day
+    const scheduled = (db.agenda[dateKey] || [])
+      .map(id => db.patients.find(p => p.id === id))
+      .filter(Boolean);
+
+    // all patients from this UBS for dropdown
+    const ubsPats = db.patients.filter(p => p.ubs === ubs);
+
+    html += `
+      <div class="agenda-day${isToday?' agenda-today':''}">
+        <div class="agenda-day-head">
+          <span class="agenda-day-dot" style="background:${col};"></span>
+          <span class="agenda-day-name">${DAY_NAMES[dayNum]}</span>
+          <span class="agenda-day-ubs">${ubs}</span>
+          <span class="agenda-day-date">${fmt(date)}</span>
+        </div>
+        <div class="agenda-patients">
+    `;
+
+    if(scheduled.length === 0){
+      html += `<div class="agenda-empty">Nenhum paciente agendado</div>`;
+    } else {
+      scheduled.forEach(p => {
+        const hasSession = p.sessions.some(s => s.date === dateKey);
+        const statusIcon  = hasSession ? '✓' : '○';
+        const statusColor = hasSession ? '#7ab880' : '#c98a2e';
+        const statusTitle = hasSession ? 'Evoluído — sessão registrada nesta data' : 'Pendente — nenhuma sessão registrada nesta data';
+        html += `
+          <div class="agenda-pat-row" onclick="hideModal('modal-agenda');selectPatient('${p.id}')">
+            <span style="color:${statusColor};font-size:13px;flex-shrink:0;" title="${statusTitle}">${statusIcon}</span>
+            <span class="agenda-pat-name">${p.name}</span>
+            <span class="agenda-pat-mat">${p.matricula||'—'}</span>
+            <span class="agenda-pat-sess">${p.sessions.length} sessões</span>
+            <button class="agenda-pat-remove" onclick="event.stopPropagation();removeFromAgenda('${dateKey}','${p.id}')" title="Remover">✕</button>
+          </div>
+        `;
+      });
+    }
+
+    if(ubsPats.length > 0){
+      html += `<div style="display:flex;gap:6px;margin:2px 6px 6px;">
+        <select class="agenda-btn-add" onchange="addToAgenda('${dateKey}',this.value);this.value='';" style="flex:1;height:26px;padding:0 6px;cursor:pointer;margin:0;">
+          <option value="">+ Agendar paciente existente…</option>
+          ${ubsPats.filter(p=>!(db.agenda[dateKey]||[]).includes(p.id)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+        </select>
+        <button class="agenda-btn-add" style="margin:0;white-space:nowrap;" onclick="openQuickPatient('${dateKey}',${ci})">+ Novo paciente</button>
+      </div>`;
+    } else {
+      html += `<button class="agenda-btn-add" style="width:calc(100% - 12px);" onclick="openQuickPatient('${dateKey}',${ci})">+ Novo paciente</button>`;
+    }
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('agenda-content').innerHTML = html;
+}
+
+function addToAgenda(dateKey, patId){
+  if(!patId) return;
+  if(!db.agenda) db.agenda = {};
+  if(!db.agenda[dateKey]) db.agenda[dateKey] = [];
+  if(!db.agenda[dateKey].includes(patId)){
+    db.agenda[dateKey].push(patId);
+    saveDB();
+  }
+  renderAgenda();
+}
+
+function removeFromAgenda(dateKey, patId){
+  if(!db.agenda || !db.agenda[dateKey]) return;
+  db.agenda[dateKey] = db.agenda[dateKey].filter(id => id !== patId);
+  saveDB();
+  renderAgenda();
+}
+
+let qpDateKey = null, qpUbs = null;
+
+function openQuickPatient(dateKey, ubsIndex){
+  qpDateKey = dateKey; qpUbs = UBS_LIST[ubsIndex];
+  document.getElementById('qp-name').value = '';
+  document.getElementById('qp-mat').value = '';
+  document.getElementById('qp-ubs-label').textContent = qpUbs;
+  document.getElementById('qp-ubs-dot').style.background = uC(qpUbs);
+  showModal('modal-quick-patient');
+  setTimeout(()=>document.getElementById('qp-name').focus(), 50);
+}
+
+function createQuickPatient(){
+  const name = document.getElementById('qp-name').value.trim();
+  const mat  = document.getElementById('qp-mat').value.trim();
+  if(!name){ alert('Nome é obrigatório.'); return; }
+  if(!mat){ alert('Matrícula é obrigatória.'); return; }
+
+  const p = { id: Date.now().toString(), name, matricula: mat, dob:'', ubs: qpUbs, obs:'', sessions:[] };
+  db.patients.push(p);
+
+  if(!db.agenda) db.agenda = {};
+  if(!db.agenda[qpDateKey]) db.agenda[qpDateKey] = [];
+  db.agenda[qpDateKey].push(p.id);
+
+  saveDB();
+  hideModal('modal-quick-patient');
+  renderSidebar();
+  renderAgenda();
+}
+
+/* ═══════════ EVOLUTION ANALYSIS ═══════════ */
+async function runEvolutionAnalysis(){
+  const p = db.patients.find(x=>x.id===CUR_PAT);
+  if(!p){ alert('Selecione um paciente primeiro.'); return; }
+  if(p.sessions.length < 2){ alert('São necessárias pelo menos 2 sessões para analisar a evolução.'); return; }
+
+  document.getElementById('ai-panel').classList.add('open');
+  addMsg('sys','── Análise de evolução: ' + p.name + ' ──');
+  const typing = addTyping();
+  document.getElementById('ai-send').disabled = true;
+
+  const sessCtx = p.sessions.map((s,i) =>
+    `SESSÃO ${s.num||i+1} — ${fmtDate(s.date)}${s.title?` | ${s.title}`:''}\n${s.body||'(sem conteúdo)'}`
+  ).join('\n\n─────────────────\n\n');
+
+  const prompt = `Você é um psicólogo clínico especializado em Psicoterapia Breve e atuação em saúde pública (SUS).
+
+Analise a EVOLUÇÃO TERAPÊUTICA deste paciente ao longo de TODAS as sessões registradas e forneça:
+
+1. **Trajetória terapêutica** — como o paciente evoluiu da primeira à última sessão
+2. **Padrões identificados** — padrões de comportamento, defesas, recursos ou temas recorrentes ao longo das sessões
+3. **Pontos de inflexão** — momentos de mudança significativa (positiva ou negativa)
+4. **Estado atual** — avaliação do momento terapêutico atual com base na última sessão
+5. **Recomendações** — próximos passos terapêuticos sugeridos pela Psicoterapia Breve
+
+Seja objetivo e clínico. Base sua análise exclusivamente no conteúdo das sessões.
+
+Paciente: ${p.name} | Matrícula: ${p.matricula||'—'} | UBS: ${p.ubs}
+Demanda inicial: ${p.obs||'não informada'}
+Total de sessões: ${p.sessions.length}
+
+═══ SESSÕES ═══
+
+${sessCtx}`;
+
+  try {
+    const data = await callClaude({model:'claude-sonnet-4-20250514', max_tokens:1500, messages:[{role:'user',content:prompt}]});
+    typing.remove();
+    addMsg('bot', (data.content||[]).map(i=>i.text||'').join('\n')||'Sem resposta.');
+  } catch(e){ typing.remove(); addMsg('bot',`⚠️ ${e.message}`); }
+  document.getElementById('ai-send').disabled = false;
+}
+
+
+function printSession(){
+  const p=db.patients.find(x=>x.id===CUR_PAT);
+  if(!p||CUR_SESS===null){ alert('Selecione uma sessão para imprimir.'); return; }
+  saveSession();
+  const s=p.sessions[CUR_SESS];
+  const area=document.getElementById('print-area');
+  area.innerHTML=`
+    <div class="pr-header">
+      <div class="pr-title">${s.title||'Relato de Sessão'}</div>
+      <div class="pr-meta">
+        <span><b>Paciente:</b> ${p.name}</span>
+        <span><b>Matrícula:</b> ${p.matricula||'—'}</span>
+        <span><b>Data:</b> ${fmtDate(s.date)}</span>
+        <span><b>Sessão Nº:</b> ${s.num||CUR_SESS+1}</span>
+        <span><b>Unidade:</b> ${p.ubs}</span>
+      </div>
+    </div>
+    <div class="pr-body">${(s.body||'').replace(/</g,'&lt;')}</div>
+    <div class="pr-footer">Guarapsi — Sistema de Atendimento Psicológico &nbsp;|&nbsp; Impresso em ${new Date().toLocaleDateString('pt-BR')}</div>
+  `;
+  window.print();
+}
+
+init();
+</script>
+</body>
+</html>
