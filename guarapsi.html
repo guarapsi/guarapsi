@@ -728,15 +728,23 @@ async function loadCloudDB(){
   if(!firestoreDB || !currentUser) return;
   try {
     const snap = await firestoreDB.collection('usuarios').doc(currentUser.uid).get();
-    if(snap.exists && snap.data().patients && snap.data().patients.length > 0){
-      db = snap.data();
-      saveLocalDB();
-    } else {
-      const oldSnap = await firestoreDB.collection('guarapsi').doc('data').get();
-      if(oldSnap.exists && oldSnap.data().patients && oldSnap.data().patients.length > 0){
-        db = oldSnap.data();
+    if(snap.exists){
+      const data = snap.data();
+      if(data.patients && data.patients.length > 0){
+        db = data;
         saveLocalDB();
-        await firestoreDB.collection('usuarios').doc(currentUser.uid).set(db);
+      } else if(data.agenda){
+        // has agenda but no patients yet
+        db.agenda = data.agenda;
+        saveLocalDB();
+      } else {
+        // fallback: try old path
+        const oldSnap = await firestoreDB.collection('guarapsi').doc('data').get();
+        if(oldSnap.exists && oldSnap.data().patients && oldSnap.data().patients.length > 0){
+          db = oldSnap.data();
+          saveLocalDB();
+          await firestoreDB.collection('usuarios').doc(currentUser.uid).set(db);
+        }
       }
     }
   } catch(e){ console.warn('Cloud load failed:', e); }
@@ -1274,6 +1282,14 @@ function getWeekDates(monday){
 let agendaCurrentMonday = getMonday(new Date());
 
 function showAgenda(){
+  // if cloud data not yet loaded, wait briefly
+  if(useCloud && (!db.agenda) && currentUser){
+    showModal('modal-agenda');
+    document.getElementById('agenda-content').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);">☁ Carregando dados…</div>';
+    // retry after cloud loads
+    setTimeout(()=>{ renderAgenda(); }, 1500);
+    return;
+  }
   renderAgenda();
   showModal('modal-agenda');
 }
